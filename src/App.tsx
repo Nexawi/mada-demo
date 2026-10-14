@@ -76,7 +76,7 @@ function AppScreens() {
   ];
   return (
     <div className="flex h-full flex-col">
-      <header className="flex items-center justify-between px-5 pt-4">
+      <header className="flex items-center justify-between px-5 pt-26">
         <Logo tagline={false} className="h-9 w-auto" />
       </header>
       <AnimatePresence mode="wait" initial={false}>
@@ -294,9 +294,32 @@ export default function App() {
       <MotionConfig reducedMotion="user">
         {live}
         <div className="flex min-h-full items-center justify-center gap-12 p-6">
-          <div className="relative h-[min(820px,calc(100vh-48px))] w-[390px] shrink-0 overflow-hidden rounded-[44px] border-[10px] border-ink bg-pearl shadow-2xl">
-            <AppScreens />
-          </div>
+          
+<div className="relative h-[min(820px,calc(100vh-48px))] w-[390px] shrink-0 overflow-visible rounded-[54px] bg-[#171719] p-[5px] shadow-[0_0_0_1px_#777,0_0_0_3px_#29292c,0_24px_70px_rgba(0,0,0,0.35)]">
+
+  {/* Inner screen */}
+  <div className="relative h-full w-full overflow-hidden rounded-[49px] bg-pearl">
+
+    {/* Dynamic Island */}
+    <div className="pointer-events-none absolute left-1/2 top-[12px] z-50 flex h-[30px] w-[104px] -translate-x-1/2 items-center justify-center rounded-full bg-black">
+      <div className="absolute right-[17px] h-[8px] w-[8px] rounded-full bg-[#151515]" />
+    </div>
+
+    {/* Existing Mada application */}
+    <AppScreens />
+
+  </div>
+
+  {/* Volume buttons */}
+  <div className="pointer-events-none absolute -left-[7px] top-[125px] h-[36px] w-[4px] rounded-l-md bg-[#77777b]" />
+  <div className="pointer-events-none absolute -left-[7px] top-[174px] h-[58px] w-[4px] rounded-l-md bg-[#77777b]" />
+  <div className="pointer-events-none absolute -left-[7px] top-[242px] h-[58px] w-[4px] rounded-l-md bg-[#77777b]" />
+
+  {/* Power button */}
+  <div className="pointer-events-none absolute -right-[7px] top-[185px] h-[76px] w-[4px] rounded-r-md bg-[#77777b]" />
+
+</div>
+
           <aside className="w-[340px]">
             <Logo className="mb-4 h-auto w-48" />
             <DemoPanel play={play} />
