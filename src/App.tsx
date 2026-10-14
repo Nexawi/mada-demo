@@ -5,7 +5,7 @@ import { Button, Segmented, Sheet } from "./components/ui";
 import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import { Toaster } from "sonner";
 import { LiveEvents } from "./components/live";
-import { Consent, PathChoice, Reading, RiskCheck, Welcome } from "./screens/Onboarding";
+import { Consent, Plan, Reading, RiskCheck, TejooriSetup, Welcome } from "./screens/Onboarding";
 import { Activity, Home, Invest, Pots, Settings } from "./screens/Main";
 
 const TABS: { id: Tab; icon: ReactNode }[] = [
@@ -29,7 +29,7 @@ const fade = {
 /** Advances the simulation on a timer; waits while an approval is pending. */
 function useAutoplay(playing: boolean, speed: "normal" | "fast") {
   const stage = useDemo((s) => s.stage);
-  const blocked = useDemo((s) => !!s.pendingRate || !!s.pendingBuy);
+  const blocked = useDemo((s) => !!s.pendingRate || s.pendingGoal);
   const nextMonth = useDemo((s) => s.nextMonth);
   useEffect(() => {
     if (!playing || stage !== "app" || blocked) return;
@@ -50,7 +50,8 @@ function AppScreens() {
       consent: Consent,
       reading: Reading,
       risk: RiskCheck,
-      path: PathChoice,
+      plan: Plan,
+      tejoori: TejooriSetup,
     }[stage];
     return (
       <AnimatePresence mode="wait" initial={false}>
@@ -80,7 +81,13 @@ function AppScreens() {
             type="button"
             onClick={() => set({ tab: x.id })}
             aria-current={tab === x.id ? "page" : undefined}
-            className={`flex min-h-14 flex-col items-center justify-center gap-0.5 text-[11px] font-semibold ${tab === x.id ? "text-brand" : "text-muted"}`}
+            className={`flex min-h-14 flex-col items-center justify-center gap-0.5 text-[11px] font-semibold ${
+              x.id === "invest"
+                ? `bg-ink text-white ${tab === x.id ? "underline underline-offset-4" : ""}`
+                : tab === x.id
+                  ? "text-brand"
+                  : "text-muted"
+            }`}
           >
             <svg
               width="22"
@@ -143,7 +150,7 @@ function DemoPanel({ showTitle = true, play }: { showTitle?: boolean; play: Play
                   type="button"
                   aria-pressed={s.queue.includes(sc)}
                   onClick={() => s.toggleScenario(sc)}
-                  className={`min-h-11 rounded-full border px-3 text-sm font-semibold ${s.queue.includes(sc) ? "border-accent bg-sand text-sand-ink" : "border-line bg-paper text-ink"}`}
+                  className={`min-h-11 rounded-full border px-3 text-sm font-semibold ${s.queue.includes(sc) ? "border-brand bg-mist text-brand" : "border-line bg-paper text-ink"}`}
                 >
                   {t(`sc.${sc}` as Key)}
                 </button>
@@ -169,7 +176,7 @@ function DemoPanel({ showTitle = true, play }: { showTitle?: boolean; play: Play
               ]}
             />
             {play.playing && play.blocked && (
-              <p className="mt-2 text-sm font-medium text-sand-ink" role="status">
+              <p className="mt-2 text-sm font-medium text-brand" role="status">
                 {t("demo.waiting")}
               </p>
             )}
@@ -222,7 +229,7 @@ export default function App() {
         duration={2600}
         visibleToasts={3}
         toastOptions={{
-          style: { fontFamily: "inherit", borderColor: "#ddd4e7", color: "#202124" },
+          style: { fontFamily: "inherit", borderColor: "#ddd2e8", color: "#000000" },
         }}
       />
     </>
@@ -239,11 +246,11 @@ export default function App() {
       <MotionConfig reducedMotion="user">
         {live}
         <div className="flex min-h-full items-center justify-center gap-12 p-6">
-          <div className="relative h-[min(820px,calc(100vh-48px))] w-[390px] shrink-0 overflow-hidden rounded-[44px] border-[10px] border-brand-deep bg-pearl shadow-2xl">
+          <div className="relative h-[min(820px,calc(100vh-48px))] w-[390px] shrink-0 overflow-hidden rounded-[44px] border-[10px] border-ink bg-pearl shadow-2xl">
             <AppScreens />
           </div>
           <aside className="w-[340px]">
-            <p className="mb-1 text-sm font-semibold text-brand">{t("app.name")}</p>
+            <p className="mb-1 text-xl font-extrabold text-brand">{t("app.name")}</p>
             <DemoPanel play={play} />
           </aside>
         </div>
@@ -261,7 +268,7 @@ export default function App() {
         <button
           type="button"
           onClick={() => setDemoOpen(true)}
-          className={`fixed end-4 z-40 ${inApp ? "bottom-[calc(4.5rem+env(safe-area-inset-bottom))]" : "bottom-[calc(6rem+env(safe-area-inset-bottom))]"} min-h-11 rounded-full bg-accent px-4 text-sm font-bold text-brand-deep shadow-lg`}
+          className={`fixed end-4 z-40 ${inApp ? "bottom-[calc(4.5rem+env(safe-area-inset-bottom))]" : "bottom-[calc(6rem+env(safe-area-inset-bottom))]"} min-h-11 rounded-full bg-ink px-4 text-sm font-bold text-white shadow-lg`}
         >
           {t("demo.open")}
         </button>

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.0 — 2026-10-14
+- Renamed to Mada. Colours limited to Deep Purple #522B79, Jet Black and White.
+- Removed the robo-advisor; the saving rate is now the engine's monthly recommendation, capped by customer limits.
+- Replaced the emergency fund with Tejoori (named goal, BD 50 minimum to open, choice when the goal is reached).
+- Investment minimum BD 100; profit always reinvested; Invest tab shown in black.
+- Bank fee changed from a percentage of assets to a share of profit.
+- Added personal or family account.
+
 ## 0.3.0 — 2026-10-14
 - Live demo: auto-play with speed control (waits on approvals), balance-by-month chart (recharts, lazy-loaded), rolling numbers (number-flow), screen and card animations (motion, respects reduced motion), event toasts (sonner), confetti on milestones (canvas-confetti, lazy-loaded).
 - Prettier applied to src.

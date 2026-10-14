@@ -11,7 +11,7 @@ export function logText(
   for (const [k, v] of Object.entries(e.p ?? {})) {
     if (e.money?.includes(k)) p[k] = m(Number(v));
     else if (k === "term") p[k] = t(`term.${v}` as Key);
-    else if (k === "pot") p[k] = t(v as Key);
+    else if (k === "pot" || k === "name") p[k] = t(v as Key);
     else p[k] = v;
   }
   return t(e.key, p);

@@ -3,8 +3,8 @@ import { useT } from "../i18n";
 import { useDemo } from "../store";
 import { locale } from "./live";
 
-const BRAND = "#55267e";
-const ACCENT = "#51c1ad";
+const BRAND = "#522b79";
+const INK = "#000000";
 
 /** Stacked area of emergency fund and investments, one point per simulated month. */
 export default function BalanceChart() {
@@ -31,13 +31,13 @@ export default function BalanceChart() {
             <Tooltip
               formatter={(v, name) => [
                 m(Number(v)),
-                name === "emergency" ? t("home.emergency") : t("home.invested"),
+                name === "tejoori" ? t("tejoori.name") : t("home.invested"),
               ]}
-              contentStyle={{ borderRadius: 12, border: "1px solid #ddd4e7", fontSize: 12 }}
+              contentStyle={{ borderRadius: 12, border: "1px solid #ddd2e8", fontSize: 12 }}
             />
             <Area
               type="monotone"
-              dataKey="emergency"
+              dataKey="tejoori"
               stackId="1"
               stroke={BRAND}
               fill={BRAND}
@@ -49,9 +49,9 @@ export default function BalanceChart() {
               type="monotone"
               dataKey="invested"
               stackId="1"
-              stroke={ACCENT}
-              fill={ACCENT}
-              fillOpacity={0.35}
+              stroke={INK}
+              fill={INK}
+              fillOpacity={0.18}
               strokeWidth={2}
               animationDuration={450}
             />

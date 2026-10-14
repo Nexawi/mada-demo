@@ -30,8 +30,8 @@ export function Percent({ value, className = "" }: { value: number; className?: 
   );
 }
 
-const BRAND = "#55267e";
-const ACCENT = "#51c1ad";
+const BRAND = "#522b79";
+const INK = "#000000";
 
 const TOASTED = new Set([
   "log.saved",
@@ -39,9 +39,9 @@ const TOASTED = new Set([
   "log.matured",
   "log.rate",
   "log.prizeWin",
-  "log.target",
+  "log.goal",
   "log.withdraw",
-  "log.held",
+  "log.family",
 ]);
 
 /** Turns new log entries into toasts and fires confetti on milestones. */
@@ -62,13 +62,13 @@ export function LiveEvents() {
       .slice(0, 3)
       .reverse()
       .forEach((e) => toast(logText(e, t, m)));
-    if (fresh.some((e) => e.key === "log.target" || e.key === "log.prizeWin")) {
+    if (fresh.some((e) => e.key === "log.goal" || e.key === "log.prizeWin")) {
       void import("canvas-confetti").then(({ default: confetti }) =>
         confetti({
           particleCount: 110,
           spread: 75,
           origin: { y: 0.35 },
-          colors: [BRAND, ACCENT, "#ffffff"],
+          colors: [BRAND, INK, "#ffffff"],
           disableForReducedMotion: true,
         }),
       );

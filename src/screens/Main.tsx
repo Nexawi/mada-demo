@@ -1,17 +1,18 @@
 import { lazy, Suspense, useState } from "react";
 import {
+  BANK_SHARE,
+  FAMILY_MEMBER_AMOUNT,
   NISAB_EXAMPLE,
-  SUKUK_RATE,
-  TARGET_MONTHS,
   PERSONAS,
-  profitOf,
-  zakatDue,
+  netProfitOf,
   round3,
+  zakatDue,
   type Path,
   type Risk,
+  type Term,
 } from "../engine";
 import { useT, type Key } from "../i18n";
-import { holdingsTotal, targetOf, useDemo, type PotKey } from "../store";
+import { holdingsTotal, useDemo, usesTejoori, type PotKey } from "../store";
 import { Button, Card, Notice, Progress, Segmented, Sheet, Switch } from "../components/ui";
 import { AnimatePresence, motion } from "motion/react";
 import { Money, Percent } from "../components/live";
@@ -35,16 +36,27 @@ const pop = {
   transition: { type: "spring" as const, stiffness: 420, damping: 30 },
 };
 
+/** Goal name for display, falling back to "your goal". */
+function useGoalLabel() {
+  const { t } = useT();
+  const name = useDemo((s) => s.goalName);
+  return name || t("goal.default");
+}
+
+/** The engine's monthly recommendation and the goal-reached choice. */
 export function PendingCards() {
-  const { t, m, mon } = useT();
+  const { t, m } = useT();
   const s = useDemo();
+  const goal = useGoalLabel();
   return (
     <AnimatePresence initial={false}>
       {s.pendingRate && (
         <motion.div key="rate" {...pop}>
-          <Card className="mt-4 border-2 border-accent">
+          <Card className="mt-4 border-2 border-brand">
             <h2 className="text-lg font-bold">{t("pending.rate", { r: s.pendingRate.rate })}</h2>
-            <p className="mt-1 text-sm text-muted">{t(`reason.${s.pendingRate.reason}` as Key)}</p>
+            <p className="mt-1 text-sm text-muted">
+              {t("pending.rate.d", { min: s.minRate, max: s.maxRate })}
+            </p>
             <div className="mt-3 flex flex-wrap gap-2">
               <Button onClick={s.acceptRate}>
                 {t("pending.accept", { r: s.pendingRate.rate })}
@@ -56,31 +68,17 @@ export function PendingCards() {
           </Card>
         </motion.div>
       )}
-      {s.pendingBuy && (
-        <motion.div key="buy" {...pop}>
-          <Card className="mt-4 border-2 border-invest-ink/40">
+      {s.pendingGoal && (
+        <motion.div key="goal" {...pop}>
+          <Card className="mt-4 border-2 border-ink">
             <h2 className="text-lg font-bold">
-              {t("pending.buy", {
-                a: m(s.pendingBuy.amount),
-                term: t(`term.${s.pendingBuy.term}` as Key),
-              })}
+              {t("goal.title", { name: goal, g: m(s.goalAmount) })}
             </h2>
-            <p className="mt-1 text-sm text-muted">
-              {t("pending.buy.d", {
-                p: m(
-                  profitOf({
-                    amount: s.pendingBuy.amount,
-                    rate: SUKUK_RATE[s.pendingBuy.term],
-                    term: s.pendingBuy.term,
-                  }),
-                ),
-                m: mon(s.month + s.pendingBuy.term),
-              })}
-            </p>
+            <p className="mt-1 text-sm text-muted">{t("goal.d")}</p>
             <div className="mt-3 flex flex-wrap gap-2">
-              <Button onClick={s.approveBuy}>{t("pending.approve")}</Button>
-              <Button variant="ghost" onClick={s.declineBuy}>
-                {t("pending.decline")}
+              <Button onClick={() => s.chooseAfterGoal("keep")}>{t("goal.keep")}</Button>
+              <Button variant="dark" onClick={() => s.chooseAfterGoal("invest")}>
+                {t("goal.invest")}
               </Button>
             </div>
           </Card>
@@ -93,25 +91,36 @@ export function PendingCards() {
 export function Home() {
   const { t, m } = useT();
   const s = useDemo();
-  const target = targetOf(s);
+  const goal = useGoalLabel();
   const invested = round3(holdingsTotal(s.holdings) + s.investPot);
-  const total = round3(s.emergency + invested);
+  const total = round3(s.tejoori + invested);
+  const hasTejoori = usesTejoori(s);
   return (
     <div>
-      <p className="text-muted">{t("home.greet", { name: t(`persona.${s.personaId}`) })}</p>
-      <div className="mt-2 rounded-3xl bg-brand-deep p-5 text-white">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-muted">{t("home.greet", { name: t(`persona.${s.personaId}`) })}</p>
+        {s.accountType === "family" && (
+          <span className="rounded-md bg-ink px-2 py-0.5 text-xs font-semibold text-white">
+            {t("family.badge")}
+          </span>
+        )}
+      </div>
+      <div className="mt-2 rounded-3xl bg-brand p-5 text-white">
         <p className="text-sm text-brand-soft">{t("home.total")}</p>
         <p className="mt-1 text-4xl font-extrabold">
           <Money value={total} />
         </p>
-        <div className="mt-4 flex items-end justify-between gap-3 border-t border-white/15 pt-3">
+        <div className="mt-4 flex items-end justify-between gap-3 border-t border-white/20 pt-3">
           <div>
             <p className="text-sm text-brand-soft">{t("home.rate")}</p>
             <p className="font-semibold">
               {t("home.rateAmt", { r: s.rate, a: m(round3((s.salary * s.rate) / 100)) })}
             </p>
+            <p className="text-xs text-brand-soft">
+              {t("home.limits", { min: s.minRate, max: s.maxRate })}
+            </p>
           </div>
-          <span className="rounded-full bg-accent px-3 py-1 text-lg font-extrabold text-brand-deep">
+          <span className="rounded-full bg-white px-3 py-1 text-lg font-extrabold text-brand">
             <Percent value={s.rate} />
           </span>
         </div>
@@ -121,30 +130,29 @@ export function Home() {
         {s.month === 0 && <Notice>{t("home.empty")}</Notice>}
         {s.paused && <Notice tone="warn">{t("home.paused")}</Notice>}
         {s.dip && <Notice tone="warn">{t("home.dip")}</Notice>}
-        {s.notice === "held" && <Notice>{t("home.held", { r: s.rate })}</Notice>}
-        {s.notice === "target" && <Notice>{t("home.target")}</Notice>}
       </div>
 
       <PendingCards />
 
       <div className="mt-4 grid grid-cols-2 gap-3">
-        {s.path !== "direct" && (
+        {hasTejoori && (
           <button
             type="button"
             onClick={() => s.set({ tab: "pots" })}
             className="rounded-2xl bg-paper p-4 text-start"
           >
-            <p className="text-sm text-muted">{t("home.emergency")}</p>
+            <p className="text-sm text-muted">{t("tejoori.name")}</p>
             <p className="mt-1 text-lg font-bold">
-              <Money value={s.emergency} />
+              <Money value={s.tejoori} />
             </p>
             <div className="mt-3">
-              <Progress value={(s.emergency / target) * 100} label={t("home.emergency")} />
+              <Progress value={(s.tejoori / s.goalAmount) * 100} label={goal} />
             </div>
-            <p className="tnum mt-1.5 text-xs text-muted">
-              {t("home.ofTarget", {
-                p: Math.min(100, Math.round((s.emergency / target) * 100)),
-                t: m(target),
+            <p className="tnum mt-1.5 truncate text-xs text-muted">
+              {goal}:{" "}
+              {t("home.goal", {
+                p: Math.min(100, Math.round((s.tejoori / s.goalAmount) * 100)),
+                g: m(s.goalAmount),
               })}
             </p>
           </button>
@@ -152,15 +160,13 @@ export function Home() {
         <button
           type="button"
           onClick={() => s.set({ tab: "invest" })}
-          className={`rounded-2xl bg-invest p-4 text-start ${s.path === "direct" ? "col-span-2" : ""}`}
+          className={`rounded-2xl bg-ink p-4 text-start text-white ${hasTejoori ? "" : "col-span-2"}`}
         >
-          <p className="text-sm text-invest-ink">{t("home.invested")}</p>
-          <p className="mt-1 text-lg font-bold text-invest-ink">
+          <p className="text-sm text-white/75">{t("home.invested")}</p>
+          <p className="mt-1 text-lg font-bold">
             <Money value={invested} />
           </p>
-          <p className="mt-3 text-xs text-invest-ink">
-            {t("home.sukuk", { n: s.holdings.length })}
-          </p>
+          <p className="mt-3 text-xs text-white/75">{t("home.sukuk", { n: s.holdings.length })}</p>
         </button>
       </div>
       <Suspense fallback={<div className="mt-4 h-[212px] rounded-2xl bg-paper" />}>
@@ -173,43 +179,67 @@ export function Home() {
 export function Pots() {
   const { t, m } = useT();
   const s = useDemo();
+  const goal = useGoalLabel();
   const [open, setOpen] = useState(false);
-  const p = PERSONAS.find((x) => x.id === s.personaId)!;
-  const target = targetOf(s);
+  const partner = PERSONAS.find((x) => x.id === s.personaId)!.partner;
+  const hasTejoori = usesTejoori(s);
   return (
     <div>
-      <h1 className="text-2xl font-extrabold text-brand-deep">{t("tab.pots")}</h1>
-      <Card className="mt-4">
-        <p className="font-bold">{t("home.emergency")}</p>
-        <p className="mt-1 text-3xl font-extrabold">
-          <Money value={s.emergency} />
-        </p>
-        <div className="mt-3">
-          <Progress value={(s.emergency / target) * 100} label={t("home.emergency")} />
-        </div>
-        <p className="tnum mt-1.5 text-sm text-muted">
-          {t("home.ofTarget", {
-            p: Math.min(100, Math.round((s.emergency / target) * 100)),
-            t: m(target),
-          })}
-        </p>
-        <p className="mt-3 text-sm text-muted">
-          {t("pots.emergency.d", { m: TARGET_MONTHS[p.sector] })}
-        </p>
-      </Card>
+      <h1 className="text-2xl font-extrabold text-ink">{t("tejoori.name")}</h1>
+      {hasTejoori && (
+        <Card className="mt-4">
+          <p className="font-bold">{goal}</p>
+          <p className="mt-1 text-3xl font-extrabold">
+            <Money value={s.tejoori} />
+          </p>
+          <div className="mt-3">
+            <Progress value={(s.tejoori / s.goalAmount) * 100} label={goal} />
+          </div>
+          <p className="tnum mt-1.5 text-sm text-muted">
+            {t("home.goal", {
+              p: Math.min(100, Math.round((s.tejoori / s.goalAmount) * 100)),
+              g: m(s.goalAmount),
+            })}
+          </p>
+          <p className="mt-3 text-sm text-muted">{t("tejoori.d")}</p>
+        </Card>
+      )}
 
-      <Card className="mt-3">
-        <div className="flex items-start justify-between gap-3">
-          <p className="font-bold">{t("pots.prize")}</p>
-          <span className="rounded-md bg-sand px-2 py-0.5 text-xs font-semibold text-sand-ink">
-            {t("pots.prize.ruling")}
-          </span>
-        </div>
-        <p className="mt-1 text-sm text-muted">{t("pots.prize.d")}</p>
-        <p className="tnum mt-2 font-semibold">
-          {t("pots.prize.entries", { n: Math.floor(s.emergency / 100) })}
-        </p>
-      </Card>
+      {s.accountType === "family" && (
+        <Card className="mt-3">
+          <p className="font-bold">{t("family.members")}</p>
+          <ul className="mt-2 divide-y divide-line text-sm">
+            <li className="flex justify-between gap-3 py-2">
+              <span>
+                {t(`persona.${s.personaId}`)} ({t("family.you")})
+              </span>
+              <span className="text-muted">
+                {t("home.rateAmt", { r: s.rate, a: m(round3((s.salary * s.rate) / 100)) })}
+              </span>
+            </li>
+            <li className="flex justify-between gap-3 py-2">
+              <span>{t(`persona.${partner}`)}</span>
+              <span className="text-muted">{t("family.adds", { a: m(FAMILY_MEMBER_AMOUNT) })}</span>
+            </li>
+          </ul>
+          <p className="mt-2 text-xs text-muted">{t("family.note")}</p>
+        </Card>
+      )}
+
+      {hasTejoori && (
+        <Card className="mt-3">
+          <div className="flex items-start justify-between gap-3">
+            <p className="font-bold">{t("pots.prize")}</p>
+            <span className="rounded-md bg-mist px-2 py-0.5 text-xs font-semibold text-ink">
+              {t("pots.prize.ruling")}
+            </span>
+          </div>
+          <p className="mt-1 text-sm text-muted">{t("pots.prize.d")}</p>
+          <p className="tnum mt-2 font-semibold">
+            {t("pots.prize.entries", { n: Math.floor(s.tejoori / 100) })}
+          </p>
+        </Card>
+      )}
 
       <Card className="mt-3">
         <p className="font-bold">{t("pots.invest")}</p>
@@ -225,7 +255,7 @@ export function Pots() {
         className="mt-4 w-full"
         variant="ghost"
         onClick={() => setOpen(true)}
-        disabled={s.emergency + s.investPot < 1}
+        disabled={s.tejoori + s.investPot < 1}
       >
         {t("withdraw")}
       </Button>
@@ -237,12 +267,12 @@ export function Pots() {
 function WithdrawSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t, m } = useT();
   const s = useDemo();
-  const [pot, setPot] = useState<PotKey>("emergency");
+  const [pot, setPot] = useState<PotKey>(usesTejoori(s) ? "tejoori" : "invest");
   const [amount, setAmount] = useState("");
   const [error, setError] = useState("");
   const [cooling, setCooling] = useState(false);
   const [done, setDone] = useState("");
-  const max = pot === "emergency" ? s.emergency : s.investPot;
+  const max = pot === "tejoori" ? s.tejoori : s.investPot;
   const close = () => {
     setAmount("");
     setError("");
@@ -297,7 +327,7 @@ function WithdrawSheet({ open, onClose }: { open: boolean; onClose: () => void }
               setError("");
             }}
             options={[
-              { value: "emergency", label: t("home.emergency") },
+              { value: "tejoori", label: t("tejoori.name") },
               { value: "invest", label: t("pots.invest") },
             ]}
           />
@@ -318,7 +348,7 @@ function WithdrawSheet({ open, onClose }: { open: boolean; onClose: () => void }
             placeholder={m(max)}
           />
           {error && (
-            <p id="amt-err" className="mt-1 text-sm font-medium text-sand-ink">
+            <p id="amt-err" className="mt-1 text-sm font-medium text-brand">
               {error}
             </p>
           )}
@@ -339,12 +369,24 @@ function WithdrawSheet({ open, onClose }: { open: boolean; onClose: () => void }
 export function Invest() {
   const { t, m, mon } = useT();
   const s = useDemo();
-  const wealth = round3(s.emergency + s.investPot + holdingsTotal(s.holdings));
+  const wealth = round3(s.tejoori + s.investPot + holdingsTotal(s.holdings));
   const zakat = zakatDue(wealth);
+  const share = Math.round(BANK_SHARE * 100);
   return (
     <div>
-      <h1 className="text-2xl font-extrabold text-brand-deep">{t("tab.invest")}</h1>
+      <h1 className="text-2xl font-extrabold text-ink">{t("tab.invest")}</h1>
+
+      <div className="mt-4 rounded-3xl bg-ink p-5 text-white">
+        <p className="text-lg font-bold">{t("invest.reinvest.title")}</p>
+        <p className="mt-1 text-sm text-white/80">{t("invest.reinvest.d")}</p>
+        <p className="mt-4 text-sm text-white/70">{t("invest.reinvested")}</p>
+        <p className="text-3xl font-extrabold">
+          <Money value={s.reinvested} />
+        </p>
+      </div>
+
       <PendingCards />
+
       <Section title={t("invest.holdings")}>
         {s.holdings.length === 0 ? (
           <Card>
@@ -361,18 +403,18 @@ export function Invest() {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, scale: 0.95 }}
                   transition={{ type: "spring", stiffness: 300, damping: 28 }}
-                  className="rounded-2xl bg-invest p-4 text-invest-ink"
+                  className="rounded-2xl bg-paper p-4"
                 >
                   <div className="flex items-baseline justify-between gap-3">
                     <span className="tnum text-lg font-bold">{m(h.amount)}</span>
-                    <span className="text-sm font-semibold">
+                    <span className="text-sm font-semibold text-brand">
                       {t(`term.${h.term}` as Key)} ·{" "}
                       {t("invest.rate", { r: (h.rate * 100).toFixed(1) })}
                     </span>
                   </div>
-                  <div className="mt-2 flex justify-between gap-3 text-sm">
+                  <div className="mt-2 flex justify-between gap-3 text-sm text-muted">
                     <span>{t("invest.matures", { m: mon(h.maturity) })}</span>
-                    <span>{t("invest.profit", { p: m(profitOf(h)) })}</span>
+                    <span>{t("invest.profit", { p: m(netProfitOf(h)) })}</span>
                   </div>
                   <div className="mt-2">
                     <Progress
@@ -396,26 +438,14 @@ export function Invest() {
         </div>
       </Section>
 
-      <Section title={t("invest.mode")}>
+      <Section title={t("fee.title")}>
         <Card>
-          <Segmented<"auto" | "approve">
-            label={t("invest.mode")}
-            value={s.mode}
-            onChange={(mode) => s.set({ mode })}
-            options={[
-              { value: "auto", label: t("mode.auto") },
-              { value: "approve", label: t("mode.approve") },
-            ]}
-          />
-          <p className="mt-2 text-sm text-muted">{t("invest.mode.d")}</p>
-          <div className="mt-2 border-t border-line pt-2">
-            <Switch
-              checked={s.reinvest}
-              onChange={(reinvest) => s.set({ reinvest })}
-              label={t("invest.reinvest")}
-              hint={t("invest.reinvest.d")}
-            />
-          </div>
+          <p className="text-sm text-muted">{t("fee.d", { s: share })}</p>
+          <p className="mt-3 text-sm font-semibold">{t("fee.paid")}</p>
+          <p className="text-xl font-bold">
+            <Money value={s.bankFees} />
+          </p>
+          <p className="mt-2 text-xs text-muted">{t("fee.example", { s: share })}</p>
         </Card>
       </Section>
 
@@ -456,7 +486,7 @@ export function Activity() {
   const log = useDemo((s) => s.log);
   return (
     <div>
-      <h1 className="text-2xl font-extrabold text-brand-deep">{t("tab.activity")}</h1>
+      <h1 className="text-2xl font-extrabold text-ink">{t("tab.activity")}</h1>
       {log.length === 0 ? (
         <p className="mt-4 text-muted">{t("activity.empty")}</p>
       ) : (
@@ -481,11 +511,17 @@ export function Activity() {
 export function Settings() {
   const { t } = useT();
   const s = useDemo();
-  const paths: Path[] = ["safety", "hybrid", "direct"];
+  const [goal, setGoal] = useState(String(s.goalAmount));
+  const paths: Path[] = ["tejoori", "split", "invest"];
   const risks: Risk[] = ["cautious", "balanced", "growth"];
+  const saveGoal = (v: string) => {
+    setGoal(v);
+    const n = Number(v);
+    if (Number.isFinite(n) && n > 0) s.set({ goalAmount: n, goalReached: s.tejoori >= n });
+  };
   return (
     <div>
-      <h1 className="text-2xl font-extrabold text-brand-deep">{t("tab.settings")}</h1>
+      <h1 className="text-2xl font-extrabold text-ink">{t("tab.settings")}</h1>
       <Card className="mt-4">
         <Switch
           checked={s.paused}
@@ -501,11 +537,11 @@ export function Settings() {
           onChange={(path) => s.set({ path })}
           options={paths.map((p) => ({ value: p, label: t(`path.${p}`) }))}
         />
-        {s.path === "hybrid" && (
+        {s.path === "split" && (
           <Card className="mt-2">
             <div className="flex justify-between text-sm font-semibold">
               <span className="text-brand">{t("split.save", { x: 100 - s.investPct })}</span>
-              <span className="text-invest-ink">{t("split.invest", { x: s.investPct })}</span>
+              <span className="text-ink">{t("split.invest", { x: s.investPct })}</span>
             </div>
             <input
               aria-label={t("split.label")}
@@ -518,11 +554,52 @@ export function Settings() {
             />
           </Card>
         )}
-        {s.path === "direct" && (
+        {s.path === "invest" && (
           <div className="mt-2">
             <Notice tone="warn">{t("path.warn")}</Notice>
           </div>
         )}
+      </Section>
+      {usesTejoori(s) && (
+        <Section title={t("settings.goal")}>
+          <Card className="grid gap-3">
+            <label className="text-sm font-semibold">
+              {t("tejoori.goalName")}
+              <input
+                className="mt-1 block min-h-11 w-full rounded-lg border border-line bg-paper px-3"
+                value={s.goalName}
+                maxLength={40}
+                placeholder={t("tejoori.goalPh")}
+                onChange={(e) => s.set({ goalName: e.target.value })}
+              />
+            </label>
+            <label className="text-sm font-semibold">
+              {t("tejoori.goalAmount")}
+              <input
+                className="tnum mt-1 block min-h-11 w-full rounded-lg border border-line bg-paper px-3"
+                inputMode="decimal"
+                value={goal}
+                onChange={(e) => saveGoal(e.target.value.replace(/[^\d.]/g, ""))}
+              />
+            </label>
+          </Card>
+        </Section>
+      )}
+      <Section title={t("limits.title")}>
+        <Card>
+          <p className="tnum font-semibold">
+            {s.minRate}% – {s.maxRate}%
+          </p>
+          <p className="text-sm text-muted">{t("limits.note")}</p>
+        </Card>
+      </Section>
+      <Section title={t("settings.term")}>
+        <Segmented<string>
+          label={t("settings.term")}
+          value={String(s.term)}
+          onChange={(v) => s.set({ term: Number(v) as Term })}
+          options={[3, 6, 12].map((v) => ({ value: String(v), label: t(`term.${v}` as Key) }))}
+        />
       </Section>
       <Section title={t("settings.risk")}>
         <Segmented<Risk>
@@ -531,14 +608,6 @@ export function Settings() {
           onChange={(risk) => s.set({ risk })}
           options={risks.map((r) => ({ value: r, label: t(`risk.${r}`) }))}
         />
-      </Section>
-      <Section title={t("limits.title")}>
-        <Card>
-          <p className="tnum font-semibold">
-            {s.minRate}% – {s.maxRate}%
-          </p>
-          <p className="text-sm text-muted">{t("limits.note")}</p>
-        </Card>
       </Section>
       <Section title={t("settings.liquid")}>
         <Card>

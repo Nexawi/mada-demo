@@ -1,21 +1,17 @@
 @import "tailwindcss";
 
 @theme {
-  /* Palette taken from bisb.com's stylesheet (Oct 2026): purples #55267E, #31005B and teal #51C1AD. */
-  --color-pearl: #fafafa;
+  /* Brand colours given by M (Oct 2026): Deep Purple #522B79, Jet Black #000000, Pure White #FFFFFF.
+     Tints and one shade of the purple are used for surfaces, borders and hover states. */
+  --color-pearl: #f7f4fa;
   --color-paper: #ffffff;
-  --color-ink: #202124;
-  --color-muted: #5f6368;
-  --color-brand: #55267e;
-  --color-brand-deep: #31005b;
-  --color-brand-soft: #d9cce6;
-  --color-mist: #efe9f5;
-  --color-line: #ddd4e7;
-  --color-accent: #51c1ad;
-  --color-sand: #f5ebd6;
-  --color-sand-ink: #5a4210;
-  --color-invest: #e3f4f0;
-  --color-invest-ink: #1f6b5e;
+  --color-ink: #000000;
+  --color-muted: #4d4d4d;
+  --color-brand: #522b79;
+  --color-brand-deep: #3d2059;
+  --color-brand-soft: #e6dcef;
+  --color-mist: #f1ecf6;
+  --color-line: #ddd2e8;
   --font-sans: "Montserrat", "IBM Plex Sans Arabic", system-ui, sans-serif;
 }
 
@@ -56,7 +52,7 @@ body {
 }
 
 :focus-visible {
-  outline: 3px solid var(--color-accent);
+  outline: 3px solid var(--color-brand);
   outline-offset: 2px;
   border-radius: 6px;
 }

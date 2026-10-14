@@ -1,13 +1,14 @@
 import { useEffect, useRef, type ButtonHTMLAttributes, type ReactNode } from "react";
 import { AnimatePresence, motion } from "motion/react";
 
-type Variant = "primary" | "ghost" | "subtle" | "danger";
+type Variant = "primary" | "ghost" | "subtle" | "dark" | "danger";
 
 const variants: Record<Variant, string> = {
   primary: "bg-brand text-white hover:bg-brand-deep",
   ghost: "border border-brand text-brand hover:bg-mist",
-  subtle: "bg-mist text-brand-deep hover:bg-line",
-  danger: "border border-sand-ink text-sand-ink hover:bg-sand",
+  subtle: "bg-mist text-ink hover:bg-line",
+  dark: "bg-ink text-white hover:bg-brand-deep",
+  danger: "border border-ink text-ink hover:bg-mist",
 };
 
 export function Button({
@@ -74,7 +75,7 @@ export function Segmented<T extends string>({
           role="radio"
           aria-checked={value === o.value}
           onClick={() => onChange(o.value)}
-          className={`min-h-11 rounded-lg px-2 text-sm font-semibold ${value === o.value ? "bg-paper text-brand-deep shadow-sm" : "text-muted"}`}
+          className={`min-h-11 rounded-lg px-2 text-sm font-semibold ${value === o.value ? "bg-paper text-brand shadow-sm" : "text-muted"}`}
         >
           {o.label}
         </button>
@@ -205,7 +206,7 @@ export function Notice({
   return (
     <div
       role="status"
-      className={`rounded-xl px-3 py-2.5 text-sm font-medium ${tone === "warn" ? "bg-sand text-sand-ink" : "bg-mist text-brand-deep"}`}
+      className={`rounded-xl px-3 py-2.5 text-sm font-medium ${tone === "warn" ? "bg-ink text-white" : "bg-mist text-ink"}`}
     >
       {children}
     </div>

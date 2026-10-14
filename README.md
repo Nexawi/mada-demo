@@ -1,14 +1,15 @@
-# Halal Auto-Invest — demo web app
+# Mada — demo web app
 
-Clickable concept demo of an automated, Sharia-compliant saving and investing account for Bahrain Islamic Bank (BisB) customers. All data is simulated in the browser; no bank or API is contacted.
+Mada is a clickable concept demo of engine-recommended saving and Sharia-compliant Sukuk investing for Bahrain Islamic Bank (BisB) customers. All data is simulated in the browser; no bank or API is contacted.
 
 ## What it shows
-- Onboarding: demo customer, simulated BENEFIT consent, 12-month transaction read, risk check, path choice (safety first, split, invest directly) and rate limits.
-- Monthly saving-rate engine: income up → rate up; income down or essential costs up → rate down; a discretionary spending spike holds the rate. Changes are shown for approval before the deduction.
-- Emergency fund (6 months of expenses for private sector, 3 for government) with overflow to investing and a prize-draw display.
-- Fractional Sukuk bought in BD 100 steps (3, 6 or 12 months by risk level), automatic or approve-first purchases, maturity with profit reinvested by default, liquid portion.
-- Zakat estimate, purification and certification notes; withdrawals with a cooling-off step during a market dip.
-- English and Arabic (RTL), phone and desktop layouts. Desktop shows the app in a phone frame beside the demo controls.
+- Personal or family account; family accounts share one Tejoori that a second member also saves into.
+- Monthly recommendation: a savings engine (open banking data in the real product, simulated here) recommends the rate; the customer accepts or keeps the current one. The rate always stays within the limits set at account creation.
+- Tejoori savings account with a named goal (minimum BD 50 to open). When the goal is reached the customer chooses to keep saving there or move new saving to investing.
+- Investment account: fractional Sukuk bought in BD 100 steps at the term the customer picks (3, 6 or 12 months). Profit is always reinvested.
+- Bank fee is a share of profit only (example: 20%); no profit, no fee. Tejoori is free.
+- Zakat estimate, purification and certification notes; prize draw on Tejoori (pending a Sharia ruling); liquid portion; withdrawals with a cooling-off step in a market dip.
+- Demo controls: play/pause with speed, next month, run 6 months, scenarios. English and Arabic (RTL), phone and desktop layouts.
 
 ## Setup
 ```bash
@@ -23,8 +24,10 @@ No environment variables are needed.
 
 ## Assumptions (illustrative, not real figures)
 - Sukuk profit rates: 4.5% (3 months), 5% (6 months), 5.5% (12 months).
+- Bank share of profit: 20%.
+- Family member contribution: BD 100 a month.
 - Demo nisab: BD 2,500. The real nisab follows the gold price and the Sharia board.
-- Starting saving rate: 60% of free cash as a share of salary, within the customer's limits.
+- Engine stand-in: 60% of last month's free cash as a share of salary, within the customer's limits.
 
 ## Structure
 - `src/engine.ts` — pure simulation rules (tested in `src/engine.test.ts`)

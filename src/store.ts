@@ -1,29 +1,27 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import {
+  FAMILY_MEMBER_AMOUNT,
   PERSONAS,
   SUKUK_RATE,
-  TERM_FOR_RISK,
+  bankFeeOf,
   buyable,
-  emergencyTarget,
-  initialRate,
-  nextRate,
   profitOf,
+  recommendRate,
   round3,
   route,
   type Holding,
   type Path,
   type Persona,
-  type RateReason,
   type Risk,
   type Term,
 } from "./engine";
 import type { Key, Lang } from "./i18n";
 
-export type Stage = "welcome" | "consent" | "reading" | "risk" | "path" | "app";
+export type Stage = "welcome" | "consent" | "reading" | "risk" | "plan" | "tejoori" | "app";
 export type Tab = "home" | "pots" | "invest" | "activity" | "settings";
 export type Scenario = "raise" | "cut" | "essentials" | "spend" | "dip" | "prize";
-export type PotKey = "emergency" | "invest";
+export type PotKey = "tejoori" | "invest";
 
 export interface LogEntry {
   id: number;
@@ -33,11 +31,18 @@ export interface LogEntry {
   money?: string[]; // which params are money
 }
 
+export interface Snapshot {
+  month: number;
+  tejoori: number;
+  invested: number;
+}
+
 interface Data {
   lang: Lang;
   stage: Stage;
   tab: Tab;
   personaId: Persona["id"];
+  accountType: "personal" | "family";
   salary: number;
   essentials: number;
   other: number;
@@ -48,41 +53,38 @@ interface Data {
   minRate: number;
   maxRate: number;
   rate: number;
+  term: Term;
+  goalName: string;
+  goalAmount: number;
+  openingDeposit: number;
   month: number; // months run so far
-  emergency: number;
+  tejoori: number;
   investPot: number;
   holdings: Holding[];
-  reinvest: boolean;
-  mode: "auto" | "approve";
+  reinvested: number; // net profit reinvested so far
+  bankFees: number; // bank's share of profit so far
   liquidPct: number;
   paused: boolean;
   dip: boolean;
-  targetReached: boolean;
-  notice: "held" | "target" | null;
-  pendingRate: { rate: number; reason: RateReason } | null;
-  pendingBuy: { amount: number; term: Term } | null;
+  goalReached: boolean;
+  afterGoal: "keep" | "invest" | null;
+  pendingGoal: boolean;
+  pendingRate: { rate: number } | null;
   queue: Scenario[];
   log: LogEntry[];
   seq: number;
   history: Snapshot[];
 }
 
-export interface Snapshot {
-  month: number;
-  emergency: number;
-  invested: number;
-}
-
 interface Actions {
   set: (patch: Partial<Data>) => void;
-  start: (id: Persona["id"]) => void;
+  start: (id: Persona["id"], accountType: "personal" | "family") => void;
   finishOnboarding: () => void;
   nextMonth: () => void;
   runMonths: (n: number) => void;
   acceptRate: () => void;
   keepRate: () => void;
-  approveBuy: () => void;
-  declineBuy: () => void;
+  chooseAfterGoal: (c: "keep" | "invest") => void;
   withdraw: (pot: PotKey, amount: number) => void;
   toggleScenario: (s: Scenario) => void;
   reset: () => void;
@@ -99,29 +101,34 @@ const initial = (lang: Lang = "en"): Data => {
     stage: "welcome",
     tab: "home",
     personaId: p.id,
+    accountType: "personal",
     salary: p.salary,
     essentials: p.essentials,
     other: p.other,
     baseOther: p.other,
     risk: "balanced",
-    path: "hybrid",
+    path: "split",
     investPct: 30,
     minRate: 5,
     maxRate: 25,
     rate: 15,
+    term: 6,
+    goalName: "",
+    goalAmount: 3000,
+    openingDeposit: 50,
     month: 0,
-    emergency: 0,
+    tejoori: 0,
     investPot: 0,
     holdings: [],
-    reinvest: true,
-    mode: "auto",
+    reinvested: 0,
+    bankFees: 0,
     liquidPct: 10,
     paused: false,
     dip: false,
-    targetReached: false,
-    notice: null,
+    goalReached: false,
+    afterGoal: null,
+    pendingGoal: false,
     pendingRate: null,
-    pendingBuy: null,
     queue: [],
     log: [],
     seq: 0,
@@ -129,12 +136,9 @@ const initial = (lang: Lang = "en"): Data => {
   };
 };
 
-export const targetOf = (s: Pick<Data, "personaId" | "essentials" | "baseOther">) =>
-  emergencyTarget({
-    sector: persona(s.personaId).sector,
-    essentials: s.essentials,
-    other: s.baseOther,
-  });
+/** Family accounts always have a shared Tejoori; personal ones unless investing only. */
+export const usesTejoori = (s: Pick<Data, "path" | "accountType">) =>
+  s.accountType === "family" || s.path !== "invest";
 
 export const holdingsTotal = (h: Holding[]) => round3(h.reduce((a, x) => a + x.amount, 0));
 
@@ -152,37 +156,32 @@ export const useDemo = create<State>()(
         set((s) => {
           const point = {
             month: s.month,
-            emergency: s.emergency,
+            tejoori: s.tejoori,
             invested: round3(s.investPot + holdingsTotal(s.holdings)),
           };
           return { history: [...s.history.filter((h) => h.month !== s.month), point] };
         });
 
+      /** Profit is always reinvested; purchases run automatically at the chosen term. */
       const tryBuy = () => {
         const s = get();
         const amount = buyable(s.investPot, holdingsTotal(s.holdings), s.liquidPct);
         if (!amount) return;
-        const term = TERM_FOR_RISK[s.risk];
-        if (s.mode === "approve") set({ pendingBuy: { amount, term } });
-        else buy(amount, term);
-      };
-
-      const buy = (amount: number, term: Term) => {
-        set((s) => ({
+        set({
           investPot: round3(s.investPot - amount),
           holdings: [
             ...s.holdings,
             {
               id: `${s.month}-${s.holdings.length}-${Math.random().toString(36).slice(2, 6)}`,
               amount,
-              term,
-              rate: SUKUK_RATE[term],
+              term: s.term,
+              rate: SUKUK_RATE[s.term],
               start: s.month,
-              maturity: s.month + term,
+              maturity: s.month + s.term,
             },
           ],
-        }));
-        log({ key: "log.bought", p: { a: amount, term }, money: ["a"] });
+        });
+        log({ key: "log.bought", p: { a: amount, term: s.term }, money: ["a"] });
       };
 
       const deduct = () => {
@@ -193,18 +192,25 @@ export const useDemo = create<State>()(
           return;
         }
         const amount = round3((s.salary * s.rate) / 100);
-        const target = targetOf(s);
-        const r = route(amount, s.path, s.investPct, s.emergency, target);
-        const emergency = round3(s.emergency + r.toEmergency);
-        set({ emergency, investPot: round3(s.investPot + r.toInvest) });
+        const r = route(amount, s.path, s.investPct, s.afterGoal);
+        const tejoori = round3(s.tejoori + r.toTejoori);
+        set({ tejoori, investPot: round3(s.investPot + r.toInvest) });
+        if (s.accountType === "family") {
+          set((st) => ({ tejoori: round3(st.tejoori + FAMILY_MEMBER_AMOUNT) }));
+          log({
+            key: "log.family",
+            p: { name: `persona.${persona(s.personaId).partner}`, a: FAMILY_MEMBER_AMOUNT },
+            money: ["a"],
+          });
+        }
         log({
           key: "log.saved",
-          p: { a: amount, e: r.toEmergency, i: r.toInvest },
+          p: { a: amount, e: r.toTejoori, i: r.toInvest },
           money: ["a", "e", "i"],
         });
-        if (!s.targetReached && emergency >= target && s.path !== "direct") {
-          set({ targetReached: true, notice: "target" });
-          log({ key: "log.target" });
+        if (!s.goalReached && usesTejoori(s) && get().tejoori >= s.goalAmount) {
+          set({ goalReached: true, pendingGoal: true });
+          log({ key: "log.goal", p: { a: s.goalAmount }, money: ["a"] });
         }
         tryBuy();
         snap();
@@ -214,10 +220,11 @@ export const useDemo = create<State>()(
         ...initial(),
         set: (patch) => set(patch),
 
-        start: (id) => {
+        start: (id, accountType) => {
           const p = persona(id);
           set({
             ...initial(get().lang),
+            accountType,
             personaId: id,
             salary: p.salary,
             essentials: p.essentials,
@@ -229,22 +236,23 @@ export const useDemo = create<State>()(
 
         finishOnboarding: () => {
           const s = get();
-          const rate = initialRate(persona(s.personaId), s.minRate, s.maxRate);
+          const rate = recommendRate(persona(s.personaId), s.minRate, s.maxRate);
+          const tejoori = usesTejoori(s) ? s.openingDeposit : 0;
           set({
             rate,
+            tejoori,
             stage: "app",
             tab: "home",
-            history: [{ month: 0, emergency: 0, invested: 0 }],
+            history: [{ month: 0, tejoori, invested: 0 }],
           });
           log({ key: "log.start" });
+          if (tejoori > 0) log({ key: "log.opened", p: { a: tejoori }, money: ["a"] });
         },
 
         nextMonth: () => {
           let s = get();
           if (s.pendingRate) get().acceptRate();
-          if (s.pendingBuy) set({ pendingBuy: null });
           s = get();
-          const prev = { salary: s.salary, essentials: s.essentials, other: s.other };
           const q = s.queue;
           let salary = s.salary;
           if (q.includes("raise")) salary = Math.round(salary * 1.15);
@@ -252,61 +260,46 @@ export const useDemo = create<State>()(
           const essentials = q.includes("essentials") ? s.essentials + 100 : s.essentials;
           const other = q.includes("spend") ? s.baseOther + 200 : s.baseOther;
           const month = s.month + 1;
-          set({
-            month,
-            salary,
-            essentials,
-            other,
-            queue: [],
-            dip: q.includes("dip"),
-            notice: null,
-          });
+          set({ month, salary, essentials, other, queue: [], dip: q.includes("dip") });
 
-          // Maturities
+          // Maturities: principal and net profit go back to the investment pot (always reinvested)
           const due = get().holdings.filter((h) => h.maturity <= month);
           if (due.length) {
             set((st) => ({ holdings: st.holdings.filter((h) => h.maturity > month) }));
             for (const h of due) {
-              const profit = profitOf(h);
-              log({ key: "log.matured", p: { a: h.amount, p: profit }, money: ["a", "p"] });
-              const reinvest = get().reinvest;
+              const gross = profitOf(h);
+              const fee = bankFeeOf(gross);
+              const net = round3(gross - fee);
               set((st) => ({
-                investPot: round3(st.investPot + h.amount + (reinvest ? profit : 0)),
+                investPot: round3(st.investPot + h.amount + net),
+                reinvested: round3(st.reinvested + net),
+                bankFees: round3(st.bankFees + fee),
               }));
-              if (!reinvest) log({ key: "log.profitOut", p: { p: profit }, money: ["p"] });
+              log({
+                key: "log.matured",
+                p: { a: h.amount, p: net, f: fee },
+                money: ["a", "p", "f"],
+              });
             }
           }
 
-          // Prize draw on the emergency pot
-          if (get().emergency >= 100) {
+          // Prize draw on the Tejoori balance
+          if (get().tejoori >= 100) {
             if (q.includes("prize")) {
-              set((st) => ({ emergency: round3(st.emergency + 100) }));
+              set((st) => ({ tejoori: round3(st.tejoori + 100) }));
               log({ key: "log.prizeWin", p: { a: 100 }, money: ["a"] });
             } else log({ key: "log.prizeNo" });
           }
 
-          // Rate engine
+          // Savings engine recommendation, capped by the customer's limits
           const cur = get();
-          const next = nextRate(
-            cur.rate,
-            prev,
-            { salary, essentials, other },
-            cur.minRate,
-            cur.maxRate,
-          );
-          if (next.reason === "spending-held") {
-            set({ notice: "held" });
-            log({ key: "log.held", p: { r: cur.rate } });
-          }
-          if (next.rate !== cur.rate && !cur.paused) set({ pendingRate: next });
+          const rec = recommendRate({ salary, essentials, other }, cur.minRate, cur.maxRate);
+          if (rec !== cur.rate && !cur.paused) set({ pendingRate: { rate: rec } });
           else deduct();
         },
 
         runMonths: (n) => {
-          for (let i = 0; i < n; i++) {
-            get().nextMonth();
-            if (get().pendingBuy) get().approveBuy();
-          }
+          for (let i = 0; i < n; i++) get().nextMonth();
           if (get().pendingRate) get().acceptRate();
         },
 
@@ -324,25 +317,17 @@ export const useDemo = create<State>()(
           deduct();
         },
 
-        approveBuy: () => {
-          const p = get().pendingBuy;
-          if (!p) return;
-          set({ pendingBuy: null });
-          buy(p.amount, p.term);
-          snap();
-        },
-
-        declineBuy: () => {
-          set({ pendingBuy: null });
-          log({ key: "log.declined" });
+        chooseAfterGoal: (c) => {
+          set({ afterGoal: c, pendingGoal: false });
+          log({ key: c === "invest" ? "log.goalInvest" : "log.goalKeep" });
         },
 
         withdraw: (pot, amount) => {
-          const field = pot === "emergency" ? "emergency" : "investPot";
+          const field = pot === "tejoori" ? "tejoori" : "investPot";
           set((s) => ({ [field]: round3(s[field] - amount) }) as Partial<Data>);
           log({
             key: "log.withdraw",
-            p: { a: amount, pot: pot === "emergency" ? "home.emergency" : "pots.invest" },
+            p: { a: amount, pot: pot === "tejoori" ? "tejoori.name" : "pots.invest" },
             money: ["a"],
           });
           snap();
@@ -359,6 +344,6 @@ export const useDemo = create<State>()(
         reset: () => set(initial(get().lang)),
       };
     },
-    { name: "halal-auto-invest-demo-v2" },
+    { name: "mada-demo-v1" },
   ),
 );
