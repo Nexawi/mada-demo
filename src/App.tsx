@@ -8,14 +8,23 @@ import { LiveEvents } from "./components/live";
 import { Consent, Plan, Reading, RiskCheck, TejooriSetup, Welcome } from "./screens/Onboarding";
 import { Activity, Home, Invest, Pots, Settings } from "./screens/Main";
 
+/** Filled icons for the side tabs; the centre Invest tab uses a stroked growth arrow. */
 const TABS: { id: Tab; icon: ReactNode }[] = [
-  { id: "home", icon: <path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" /> },
-  { id: "pots", icon: <path d="M5 8h14l-1 12H6zM9 8V6a3 3 0 0 1 6 0v2" /> },
-  { id: "invest", icon: <path d="M4 19h16M6 16l4-5 3 3 5-7" /> },
-  { id: "activity", icon: <path d="M5 6h14M5 12h14M5 18h9" /> },
+  { id: "home", icon: <path d="M12 3 3 10.5V21h6v-6h6v6h6V10.5z" /> },
+  {
+    id: "pots",
+    icon: (
+      <path
+        fillRule="evenodd"
+        d="M4 4h16a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-1v1.5h-3V19H8v1.5H5V19H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1zm8 4.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7z"
+      />
+    ),
+  },
+  { id: "invest", icon: <path d="M4 17l6-6 4 4 6-7M15 8h5v5" /> },
+  { id: "activity", icon: <path d="M4 5h16v3H4zM4 10.5h16v3H4zM4 16h10v3H4z" /> },
   {
     id: "settings",
-    icon: <path d="M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM4 12h2m12 0h2M12 4v2m0 12v2" />,
+    icon: <path d="M4 7h9v2H4zM17 7h3v2h-3zM13 5h4v6h-4zM4 15h3v2H4zM11 15h9v2h-9zM7 13h4v6H7z" />,
   },
 ];
 
@@ -73,38 +82,74 @@ function AppScreens() {
       </AnimatePresence>
       <nav
         aria-label="Main"
-        className="grid grid-cols-5 border-t border-line bg-paper pb-[env(safe-area-inset-bottom)]"
+        className="relative bg-paper pb-[env(safe-area-inset-bottom)] shadow-[0_-1px_0_#ddd2e8]"
       >
-        {TABS.map((x) => (
-          <button
-            key={x.id}
-            type="button"
-            onClick={() => set({ tab: x.id })}
-            aria-current={tab === x.id ? "page" : undefined}
-            className={`flex min-h-14 flex-col items-center justify-center gap-0.5 text-[11px] font-semibold ${
-              x.id === "invest"
-                ? `bg-ink text-white ${tab === x.id ? "underline underline-offset-4" : ""}`
-                : tab === x.id
-                  ? "text-brand"
-                  : "text-muted"
-            }`}
-          >
-            <svg
-              width="22"
-              height="22"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              {x.icon}
-            </svg>
-            {t(`tab.${x.id}` as Key)}
-          </button>
-        ))}
+        <svg
+          aria-hidden="true"
+          viewBox="0 0 120 18"
+          className="pointer-events-none absolute -top-[17px] left-1/2 h-[18px] w-[120px] -translate-x-1/2 drop-shadow-[0_-1px_0_#ddd2e8]"
+        >
+          <path d="M0 18C28 18 34 0 60 0s32 18 60 18z" fill="#ffffff" />
+        </svg>
+        <div className="relative grid grid-cols-5">
+          {TABS.map((x) => {
+            const active = tab === x.id;
+            if (x.id === "invest")
+              return (
+                <button
+                  key={x.id}
+                  type="button"
+                  onClick={() => set({ tab: x.id })}
+                  aria-current={active ? "page" : undefined}
+                  className="flex min-h-16 flex-col items-center justify-end gap-1 pb-2 text-[11px] font-semibold text-ink"
+                >
+                  <span
+                    className={`-mt-7 flex h-14 w-14 items-center justify-center rounded-full bg-ink text-white shadow-lg transition-shadow ${active ? "ring-4 ring-brand/35" : ""}`}
+                  >
+                    <svg
+                      width="26"
+                      height="26"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.4"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      {x.icon}
+                    </svg>
+                  </span>
+                  <span className={active ? "font-bold" : ""}>{t(`tab.${x.id}` as Key)}</span>
+                </button>
+              );
+            return (
+              <button
+                key={x.id}
+                type="button"
+                onClick={() => set({ tab: x.id })}
+                aria-current={active ? "page" : undefined}
+                className={`relative flex min-h-16 flex-col items-center justify-center gap-1 pt-1.5 text-[11px] ${active ? "font-bold text-ink" : "font-medium text-muted"}`}
+              >
+                <span
+                  aria-hidden="true"
+                  className={`absolute top-0 h-1 w-9 rounded-full bg-brand transition-opacity ${active ? "opacity-100" : "opacity-0"}`}
+                />
+                <svg
+                  width="23"
+                  height="23"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  aria-hidden="true"
+                  className={active ? "text-brand" : "text-ink"}
+                >
+                  {x.icon}
+                </svg>
+                {t(`tab.${x.id}` as Key)}
+              </button>
+            );
+          })}
+        </div>
       </nav>
     </div>
   );
@@ -268,7 +313,7 @@ export default function App() {
         <button
           type="button"
           onClick={() => setDemoOpen(true)}
-          className={`fixed end-4 z-40 ${inApp ? "bottom-[calc(4.5rem+env(safe-area-inset-bottom))]" : "bottom-[calc(6rem+env(safe-area-inset-bottom))]"} min-h-11 rounded-full bg-ink px-4 text-sm font-bold text-white shadow-lg`}
+          className={`fixed end-4 z-40 ${inApp ? "bottom-[calc(6rem+env(safe-area-inset-bottom))]" : "bottom-[calc(6rem+env(safe-area-inset-bottom))]"} min-h-11 rounded-full bg-ink px-4 text-sm font-bold text-white shadow-lg`}
         >
           {t("demo.open")}
         </button>
