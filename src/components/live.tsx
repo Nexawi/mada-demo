@@ -57,6 +57,7 @@ export function LiveEvents() {
     }
     const fresh = log.filter((e) => e.id > (seen.current ?? 0));
     seen.current = top;
+    if (fresh.length > 30) return; // bulk load (sample account): no toasts or confetti
     fresh
       .filter((e) => TOASTED.has(e.key))
       .slice(0, 3)

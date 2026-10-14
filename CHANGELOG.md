@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.5.0 — 2026-10-14
+- Dummy data: "Explore a sample account" loads Ahmed after 14 simulated months (raise, spending spike, prize win, market dip); the open banking step shows a dummy monthly spending breakdown by category.
+
 ## 0.4.0 — 2026-10-14
 - Renamed to Mada. Colours limited to Deep Purple #522B79, Jet Black and White.
 - Removed the robo-advisor; the saving rate is now the engine's monthly recommendation, capped by customer limits.

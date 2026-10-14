@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   PERSONAS,
+  SAMPLE_SPENDING,
   bankFeeOf,
   buyable,
   monthsToGoal,
@@ -22,6 +23,18 @@ describe("savings engine stand-in", () => {
   it("never goes negative when spending exceeds salary", () =>
     expect(recommendRate({ ...base, other: 900 }, 0, 25)).toBe(0));
   it("Fatima starts at 15%", () => expect(recommendRate(PERSONAS[1], 5, 25)).toBe(15));
+});
+
+describe("dummy spending", () => {
+  it("adds up to each persona's essentials and other spending", () => {
+    for (const p of PERSONAS) {
+      const rows = SAMPLE_SPENDING[p.id];
+      const sum = (ess: boolean) =>
+        rows.filter((r) => r.essential === ess).reduce((a, r) => a + r.amount, 0);
+      expect(sum(true)).toBe(p.essentials);
+      expect(sum(false)).toBe(p.other);
+    }
+  });
 });
 
 describe("routing", () => {

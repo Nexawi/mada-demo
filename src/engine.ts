@@ -17,6 +17,36 @@ export const PERSONAS: Persona[] = [
   { id: "fatima", partner: "yousif", salary: 1000, essentials: 550, other: 200 },
 ];
 
+export type TxnCategory =
+  "rent" | "utilities" | "groceries" | "phone" | "fuel" | "dining" | "shopping" | "leisure";
+
+/** Dummy monthly spending by category, matching each persona's essentials and other totals. */
+export const SAMPLE_SPENDING: Record<
+  Persona["id"],
+  { cat: TxnCategory; essential: boolean; amount: number }[]
+> = {
+  ahmed: [
+    { cat: "rent", essential: true, amount: 400 },
+    { cat: "groceries", essential: true, amount: 160 },
+    { cat: "utilities", essential: true, amount: 45 },
+    { cat: "fuel", essential: true, amount: 25 },
+    { cat: "phone", essential: true, amount: 20 },
+    { cat: "shopping", essential: false, amount: 110 },
+    { cat: "dining", essential: false, amount: 90 },
+    { cat: "leisure", essential: false, amount: 50 },
+  ],
+  fatima: [
+    { cat: "rent", essential: true, amount: 330 },
+    { cat: "groceries", essential: true, amount: 140 },
+    { cat: "utilities", essential: true, amount: 40 },
+    { cat: "fuel", essential: true, amount: 25 },
+    { cat: "phone", essential: true, amount: 15 },
+    { cat: "dining", essential: false, amount: 80 },
+    { cat: "shopping", essential: false, amount: 80 },
+    { cat: "leisure", essential: false, amount: 40 },
+  ],
+};
+
 /** Illustrative annual profit rates per Sukuk term. Not real market rates. */
 export const SUKUK_RATE: Record<Term, number> = { 3: 0.045, 6: 0.05, 12: 0.055 };
 export const TERM_FOR_RISK: Record<Risk, Term> = { cautious: 3, balanced: 6, growth: 12 };

@@ -215,6 +215,19 @@ const en = {
   "persona.yousif": "Yousif",
   "family.note": "In the real product each member links their own account with their own consent.",
   "log.family": "{name} added {a} to the family Tejoori",
+  "welcome.sample": "Explore a sample account (14 months of data)",
+  "welcome.or": "Or start a new account",
+  "reading.breakdown": "Average monthly spending",
+  "reading.essential": "Essential",
+  "reading.optional": "Other",
+  "cat.rent": "Rent",
+  "cat.utilities": "Electricity and water",
+  "cat.groceries": "Groceries",
+  "cat.phone": "Phone and internet",
+  "cat.fuel": "Fuel",
+  "cat.dining": "Dining and delivery",
+  "cat.shopping": "Shopping",
+  "cat.leisure": "Leisure",
 } as const;
 
 export type Key = keyof typeof en;
@@ -431,6 +444,19 @@ const ar: Record<Key, string> = {
   "persona.yousif": "يوسف",
   "family.note": "في المنتج الفعلي يربط كل فرد حسابه بموافقته الخاصة.",
   "log.family": "أضاف {name} {a} إلى التجوري العائلي",
+  "welcome.sample": "استعرض حساباً تجريبياً (بيانات 14 شهراً)",
+  "welcome.or": "أو افتح حساباً جديداً",
+  "reading.breakdown": "متوسط المصاريف الشهرية",
+  "reading.essential": "أساسية",
+  "reading.optional": "أخرى",
+  "cat.rent": "الإيجار",
+  "cat.utilities": "الكهرباء والماء",
+  "cat.groceries": "البقالة",
+  "cat.phone": "الهاتف والإنترنت",
+  "cat.fuel": "الوقود",
+  "cat.dining": "المطاعم والتوصيل",
+  "cat.shopping": "التسوق",
+  "cat.leisure": "الترفيه",
 };
 
 const dicts = { en, ar };

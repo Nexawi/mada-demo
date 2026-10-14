@@ -79,6 +79,7 @@ interface Data {
 interface Actions {
   set: (patch: Partial<Data>) => void;
   start: (id: Persona["id"], accountType: "personal" | "family") => void;
+  loadSample: () => void;
   finishOnboarding: () => void;
   nextMonth: () => void;
   runMonths: (n: number) => void;
@@ -232,6 +233,35 @@ export const useDemo = create<State>()(
             baseOther: p.other,
             stage: "consent",
           });
+        },
+
+        /**
+         * Dummy data: Ahmed's personal account after 14 simulated months, with a raise,
+         * a spending spike and a prize win along the way. Rate changes are accepted.
+         */
+        loadSample: () => {
+          get().start("ahmed", "personal");
+          set({
+            path: "split",
+            investPct: 30,
+            goalName: "New car",
+            goalAmount: 3000,
+            openingDeposit: 200,
+            term: 6,
+          });
+          get().finishOnboarding();
+          const events: Record<number, Scenario[]> = {
+            4: ["raise"],
+            8: ["spend"],
+            10: ["prize"],
+            12: ["dip"],
+          };
+          for (let m = 1; m <= 14; m++) {
+            set({ queue: events[m] ?? [] });
+            get().nextMonth();
+          }
+          if (get().pendingRate) get().acceptRate();
+          set({ tab: "home" });
         },
 
         finishOnboarding: () => {

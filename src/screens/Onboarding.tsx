@@ -2,6 +2,7 @@ import { useState, type ReactNode } from "react";
 import {
   FAMILY_MEMBER_AMOUNT,
   PERSONAS,
+  SAMPLE_SPENDING,
   TEJOORI_MIN,
   TERM_FOR_RISK,
   monthsToGoal,
@@ -75,6 +76,7 @@ const FEATURES: Key[] = ["feat.rec", "feat.limits", "feat.tejoori", "feat.reinve
 export function Welcome() {
   const { t, m } = useT();
   const start = useDemo((s) => s.start);
+  const loadSample = useDemo((s) => s.loadSample);
   const [pick, setPick] = useState<"ahmed" | "fatima">("ahmed");
   const [type, setType] = useState<"personal" | "family">("personal");
   return (
@@ -90,6 +92,9 @@ export function Welcome() {
         {t("welcome.title")}
       </h1>
       <p className="mt-3 text-muted">{t("welcome.body")}</p>
+      <Button variant="dark" className="mt-5 w-full" onClick={loadSample}>
+        {t("welcome.sample")}
+      </Button>
       <ul className="mt-5 grid gap-2">
         {FEATURES.map((k, i) => (
           <li key={k} className={`rounded-2xl p-3.5 ${i === 3 ? "bg-ink text-white" : "bg-paper"}`}>
@@ -101,7 +106,8 @@ export function Welcome() {
         ))}
       </ul>
 
-      <h2 className="mt-7 mb-2 font-bold">{t("type.title")}</h2>
+      <p className="mt-7 text-sm font-semibold text-muted">{t("welcome.or")}</p>
+      <h2 className="mt-2 mb-2 font-bold">{t("type.title")}</h2>
       <Segmented<"personal" | "family">
         label={t("type.title")}
         value={type}
@@ -212,6 +218,24 @@ export function Reading() {
             </div>
           ))}
         </dl>
+      </Card>
+      <Card className="mt-3">
+        <p className="mb-1 font-bold">{t("reading.breakdown")}</p>
+        <ul className="divide-y divide-line text-sm">
+          {SAMPLE_SPENDING[p.id].map((r) => (
+            <li key={r.cat} className="flex items-center justify-between gap-3 py-2">
+              <span>
+                {t(`cat.${r.cat}` as Key)}{" "}
+                <span
+                  className={`ms-1 rounded px-1.5 py-0.5 text-[11px] font-semibold ${r.essential ? "bg-mist text-brand" : "bg-ink text-white"}`}
+                >
+                  {t(r.essential ? "reading.essential" : "reading.optional")}
+                </span>
+              </span>
+              <span className="tnum font-semibold">{m(r.amount)}</span>
+            </li>
+          ))}
+        </ul>
       </Card>
       <div className="mt-4 rounded-2xl bg-brand p-4 text-white">
         <p className="font-semibold">
