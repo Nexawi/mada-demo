@@ -6,7 +6,7 @@ import { locale } from "./live";
 const BRAND = "#522b79";
 const INK = "#000000";
 
-/** Stacked area of emergency fund and investments, one point per simulated month. */
+/** Stacked area of Tejoori and investments, one point per simulated month. */
 export default function BalanceChart() {
   const { t, m, lang } = useT();
   const history = useDemo((s) => s.history);
