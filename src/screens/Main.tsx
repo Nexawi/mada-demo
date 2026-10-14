@@ -19,7 +19,7 @@ export function PendingCards() {
   return (
     <>
       {s.pendingRate && (
-        <Card className="mt-4 border-2 border-gold">
+        <Card className="mt-4 border-2 border-accent">
           <h2 className="text-lg font-bold">{t("pending.rate", { r: s.pendingRate.rate })}</h2>
           <p className="mt-1 text-sm text-muted">{t(`reason.${s.pendingRate.reason}` as Key)}</p>
           <div className="mt-3 flex flex-wrap gap-2">
@@ -29,7 +29,7 @@ export function PendingCards() {
         </Card>
       )}
       {s.pendingBuy && (
-        <Card className="mt-4 border-2 border-violet-ink/40">
+        <Card className="mt-4 border-2 border-invest-ink/40">
           <h2 className="text-lg font-bold">
             {t("pending.buy", { a: m(s.pendingBuy.amount), term: t(`term.${s.pendingBuy.term}` as Key) })}
           </h2>
@@ -58,15 +58,15 @@ export function Home() {
   return (
     <div>
       <p className="text-muted">{t("home.greet", { name: t(`persona.${s.personaId}`) })}</p>
-      <div className="mt-2 rounded-3xl bg-deep p-5 text-white">
-        <p className="text-sm text-[#CFE0DA]">{t("home.total")}</p>
+      <div className="mt-2 rounded-3xl bg-brand-deep p-5 text-white">
+        <p className="text-sm text-brand-soft">{t("home.total")}</p>
         <p className="tnum mt-1 text-4xl font-extrabold">{m(total)}</p>
         <div className="mt-4 flex items-end justify-between gap-3 border-t border-white/15 pt-3">
           <div>
-            <p className="text-sm text-[#CFE0DA]">{t("home.rate")}</p>
+            <p className="text-sm text-brand-soft">{t("home.rate")}</p>
             <p className="font-semibold">{t("home.rateAmt", { r: s.rate, a: m(round3((s.salary * s.rate) / 100)) })}</p>
           </div>
-          <span className="tnum rounded-full bg-gold px-3 py-1 text-lg font-extrabold text-[#1B1405]">{s.rate}%</span>
+          <span className="tnum rounded-full bg-accent px-3 py-1 text-lg font-extrabold text-brand-deep">{s.rate}%</span>
         </div>
       </div>
 
@@ -89,10 +89,10 @@ export function Home() {
             <p className="tnum mt-1.5 text-xs text-muted">{t("home.ofTarget", { p: Math.min(100, Math.round((s.emergency / target) * 100)), t: m(target) })}</p>
           </button>
         )}
-        <button type="button" onClick={() => s.set({ tab: "invest" })} className={`rounded-2xl bg-violet p-4 text-start ${s.path === "direct" ? "col-span-2" : ""}`}>
-          <p className="text-sm text-violet-ink">{t("home.invested")}</p>
-          <p className="tnum mt-1 text-lg font-bold text-violet-ink">{m(invested)}</p>
-          <p className="mt-3 text-xs text-violet-ink">{t("home.sukuk", { n: s.holdings.length })}</p>
+        <button type="button" onClick={() => s.set({ tab: "invest" })} className={`rounded-2xl bg-invest p-4 text-start ${s.path === "direct" ? "col-span-2" : ""}`}>
+          <p className="text-sm text-invest-ink">{t("home.invested")}</p>
+          <p className="tnum mt-1 text-lg font-bold text-invest-ink">{m(invested)}</p>
+          <p className="mt-3 text-xs text-invest-ink">{t("home.sukuk", { n: s.holdings.length })}</p>
         </button>
       </div>
     </div>
@@ -107,7 +107,7 @@ export function Pots() {
   const target = targetOf(s);
   return (
     <div>
-      <h1 className="text-2xl font-extrabold text-deep">{t("tab.pots")}</h1>
+      <h1 className="text-2xl font-extrabold text-brand-deep">{t("tab.pots")}</h1>
       <Card className="mt-4">
         <p className="font-bold">{t("home.emergency")}</p>
         <p className="tnum mt-1 text-3xl font-extrabold">{m(s.emergency)}</p>
@@ -234,7 +234,7 @@ export function Invest() {
   const zakat = zakatDue(wealth);
   return (
     <div>
-      <h1 className="text-2xl font-extrabold text-deep">{t("tab.invest")}</h1>
+      <h1 className="text-2xl font-extrabold text-brand-deep">{t("tab.invest")}</h1>
       <PendingCards />
       <Section title={t("invest.holdings")}>
         {s.holdings.length === 0 ? (
@@ -242,7 +242,7 @@ export function Invest() {
         ) : (
           <ul className="grid gap-2">
             {s.holdings.map((h) => (
-              <li key={h.id} className="rounded-2xl bg-violet p-4 text-violet-ink">
+              <li key={h.id} className="rounded-2xl bg-invest p-4 text-invest-ink">
                 <div className="flex items-baseline justify-between gap-3">
                   <span className="tnum text-lg font-bold">{m(h.amount)}</span>
                   <span className="text-sm font-semibold">{t(`term.${h.term}` as Key)} · {t("invest.rate", { r: (h.rate * 100).toFixed(1) })}</span>
@@ -316,7 +316,7 @@ export function Activity() {
   const log = useDemo((s) => s.log);
   return (
     <div>
-      <h1 className="text-2xl font-extrabold text-deep">{t("tab.activity")}</h1>
+      <h1 className="text-2xl font-extrabold text-brand-deep">{t("tab.activity")}</h1>
       {log.length === 0 ? (
         <p className="mt-4 text-muted">{t("activity.empty")}</p>
       ) : (
@@ -350,7 +350,7 @@ export function Settings() {
   const risks: Risk[] = ["cautious", "balanced", "growth"];
   return (
     <div>
-      <h1 className="text-2xl font-extrabold text-deep">{t("tab.settings")}</h1>
+      <h1 className="text-2xl font-extrabold text-brand-deep">{t("tab.settings")}</h1>
       <Card className="mt-4">
         <Switch checked={s.paused} onChange={(paused) => s.set({ paused })} label={t("settings.pause")} hint={t("settings.pause.d")} />
       </Card>
@@ -359,8 +359,8 @@ export function Settings() {
         {s.path === "hybrid" && (
           <Card className="mt-2">
             <div className="flex justify-between text-sm font-semibold">
-              <span className="text-emerald">{t("split.save", { x: 100 - s.investPct })}</span>
-              <span className="text-violet-ink">{t("split.invest", { x: s.investPct })}</span>
+              <span className="text-brand">{t("split.save", { x: 100 - s.investPct })}</span>
+              <span className="text-invest-ink">{t("split.invest", { x: s.investPct })}</span>
             </div>
             <input aria-label={t("split.label")} type="range" min={10} max={90} step={10} value={s.investPct} onChange={(e) => s.set({ investPct: Number(e.target.value) })} />
           </Card>

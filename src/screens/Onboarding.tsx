@@ -11,7 +11,7 @@ function Frame({ step, children, footer }: { step?: number; children: ReactNode;
         {step !== undefined && (
           <div className="mb-5 flex gap-1.5" aria-hidden="true">
             {[1, 2, 3, 4].map((i) => (
-              <span key={i} className={`h-1 flex-1 rounded-full ${i <= step ? "bg-emerald" : "bg-line"}`} />
+              <span key={i} className={`h-1 flex-1 rounded-full ${i <= step ? "bg-brand" : "bg-line"}`} />
             ))}
           </div>
         )}
@@ -28,8 +28,8 @@ export function Welcome() {
   const [pick, setPick] = useState<"ahmed" | "fatima">("ahmed");
   return (
     <Frame footer={<Button className="w-full" onClick={() => start(pick)}>{t("welcome.start", { name: t(`persona.${pick}`) })}</Button>}>
-      <p className="text-sm font-semibold text-emerald">{t("app.name")}</p>
-      <h1 className="mt-3 text-[2rem] leading-[1.1] font-extrabold text-deep">{t("welcome.title")}</h1>
+      <p className="text-sm font-semibold text-brand">{t("app.name")}</p>
+      <h1 className="mt-3 text-[2rem] leading-[1.1] font-extrabold text-brand-deep">{t("welcome.title")}</h1>
       <p className="mt-4 text-muted">{t("welcome.body")}</p>
       <h2 className="mt-8 mb-3 font-bold">{t("welcome.pick")}</h2>
       <div role="radiogroup" aria-label={t("welcome.pick")} className="grid gap-2">
@@ -40,7 +40,7 @@ export function Welcome() {
             role="radio"
             aria-checked={pick === p.id}
             onClick={() => setPick(p.id)}
-            className={`rounded-2xl border-2 bg-paper p-4 text-start ${pick === p.id ? "border-emerald" : "border-transparent"}`}
+            className={`rounded-2xl border-2 bg-paper p-4 text-start ${pick === p.id ? "border-brand" : "border-transparent"}`}
           >
             <span className="block text-lg font-bold">{t(`persona.${p.id}`)}</span>
             <span className="block text-sm text-muted">
@@ -67,15 +67,15 @@ export function Consent() {
         </div>
       }
     >
-      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-deep text-white" aria-hidden="true">
+      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-deep text-white" aria-hidden="true">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 10h16M6 10v8M10 10v8M14 10v8M18 10v8M3 20h18M12 3l9 5H3z" /></svg>
       </div>
-      <h1 className="text-2xl font-extrabold text-deep">{t("consent.title")}</h1>
+      <h1 className="text-2xl font-extrabold text-brand-deep">{t("consent.title")}</h1>
       <p className="mt-3 text-muted">{t("consent.body")}</p>
       <Card className="mt-5 grid gap-3">
         {(["consent.read", "consent.pay"] as Key[]).map((k) => (
           <div key={k} className="flex items-center gap-3">
-            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-mist text-emerald" aria-hidden="true">✓</span>
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-mist text-brand" aria-hidden="true">✓</span>
             <span className="font-medium">{t(k)}</span>
           </div>
         ))}
@@ -106,7 +106,7 @@ export function Reading() {
         </div>
       }
     >
-      <h1 className="text-2xl font-extrabold text-deep">{t("reading.title")}</h1>
+      <h1 className="text-2xl font-extrabold text-brand-deep">{t("reading.title")}</h1>
       <Card className="mt-5">
         <dl className="divide-y divide-line">
           {rows.map(([k, v]) => (
@@ -117,7 +117,7 @@ export function Reading() {
           ))}
         </dl>
       </Card>
-      <div className="mt-4 rounded-2xl bg-deep p-4 text-white">
+      <div className="mt-4 rounded-2xl bg-brand-deep p-4 text-white">
         <p className="font-semibold">{t("reading.rate", { r: rate, a: m(round3((p.salary * rate) / 100)) })}</p>
       </div>
     </Frame>
@@ -142,7 +142,7 @@ export function RiskCheck() {
         </div>
       }
     >
-      <h1 className="text-2xl font-extrabold text-deep">{t("risk.title")}</h1>
+      <h1 className="text-2xl font-extrabold text-brand-deep">{t("risk.title")}</h1>
       {[1, 2, 3].map((q, qi) => (
         <fieldset key={q} className="mt-5">
           <legend className="mb-2 font-semibold">{t(`risk.q${q}` as Key)}</legend>
@@ -180,7 +180,7 @@ export function PathChoice() {
         </div>
       }
     >
-      <h1 className="text-2xl font-extrabold text-deep">{t("path.title")}</h1>
+      <h1 className="text-2xl font-extrabold text-brand-deep">{t("path.title")}</h1>
       <div role="radiogroup" aria-label={t("path.title")} className="mt-5 grid gap-2">
         {paths.map((k) => (
           <button
@@ -189,7 +189,7 @@ export function PathChoice() {
             role="radio"
             aria-checked={s.path === k}
             onClick={() => s.set({ path: k })}
-            className={`rounded-2xl border-2 bg-paper p-4 text-start ${s.path === k ? "border-emerald" : "border-transparent"}`}
+            className={`rounded-2xl border-2 bg-paper p-4 text-start ${s.path === k ? "border-brand" : "border-transparent"}`}
           >
             <span className="block font-bold">{t(`path.${k}`)}</span>
             <span className="block text-sm text-muted">{t(`path.${k}.d`)}</span>
@@ -201,8 +201,8 @@ export function PathChoice() {
         <Card className="mt-4">
           <label htmlFor="split" className="font-semibold">{t("split.label")}</label>
           <div className="mt-1 flex justify-between text-sm font-semibold">
-            <span className="text-emerald">{t("split.save", { x: 100 - s.investPct })}</span>
-            <span className="text-violet-ink">{t("split.invest", { x: s.investPct })}</span>
+            <span className="text-brand">{t("split.save", { x: 100 - s.investPct })}</span>
+            <span className="text-invest-ink">{t("split.invest", { x: s.investPct })}</span>
           </div>
           <input id="split" type="range" min={10} max={90} step={10} value={s.investPct} onChange={(e) => s.set({ investPct: Number(e.target.value) })} />
         </Card>

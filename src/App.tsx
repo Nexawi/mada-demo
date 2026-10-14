@@ -36,7 +36,7 @@ function AppScreens() {
             type="button"
             onClick={() => set({ tab: x.id })}
             aria-current={tab === x.id ? "page" : undefined}
-            className={`flex min-h-14 flex-col items-center justify-center gap-0.5 text-[11px] font-semibold ${tab === x.id ? "text-emerald" : "text-muted"}`}
+            className={`flex min-h-14 flex-col items-center justify-center gap-0.5 text-[11px] font-semibold ${tab === x.id ? "text-brand" : "text-muted"}`}
           >
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               {x.icon}
@@ -77,7 +77,7 @@ function DemoPanel({ showTitle = true }: { showTitle?: boolean }) {
                   type="button"
                   aria-pressed={s.queue.includes(sc)}
                   onClick={() => s.toggleScenario(sc)}
-                  className={`min-h-11 rounded-full border px-3 text-sm font-semibold ${s.queue.includes(sc) ? "border-gold bg-sand text-sand-ink" : "border-line bg-paper text-ink"}`}
+                  className={`min-h-11 rounded-full border px-3 text-sm font-semibold ${s.queue.includes(sc) ? "border-accent bg-sand text-sand-ink" : "border-line bg-paper text-ink"}`}
                 >
                   {t(`sc.${sc}` as Key)}
                 </button>
@@ -123,11 +123,11 @@ export default function App() {
   if (wide) {
     return (
       <div className="flex min-h-full items-center justify-center gap-12 p-6">
-        <div className="relative h-[min(820px,calc(100vh-48px))] w-[390px] shrink-0 overflow-hidden rounded-[44px] border-[10px] border-deep bg-pearl shadow-2xl">
+        <div className="relative h-[min(820px,calc(100vh-48px))] w-[390px] shrink-0 overflow-hidden rounded-[44px] border-[10px] border-brand-deep bg-pearl shadow-2xl">
           <AppScreens />
         </div>
         <aside className="w-[340px]">
-          <p className="mb-1 text-sm font-semibold text-emerald">{t("app.name")}</p>
+          <p className="mb-1 text-sm font-semibold text-brand">{t("app.name")}</p>
           <DemoPanel />
         </aside>
       </div>
@@ -142,7 +142,7 @@ export default function App() {
       <button
         type="button"
         onClick={() => setDemoOpen(true)}
-        className={`fixed end-4 z-40 ${inApp ? "bottom-[calc(4.5rem+env(safe-area-inset-bottom))]" : "bottom-[calc(6rem+env(safe-area-inset-bottom))]"} min-h-11 rounded-full bg-gold px-4 text-sm font-bold text-[#1B1405] shadow-lg`}
+        className={`fixed end-4 z-40 ${inApp ? "bottom-[calc(4.5rem+env(safe-area-inset-bottom))]" : "bottom-[calc(6rem+env(safe-area-inset-bottom))]"} min-h-11 rounded-full bg-accent px-4 text-sm font-bold text-brand-deep shadow-lg`}
       >
         {t("demo.open")}
       </button>

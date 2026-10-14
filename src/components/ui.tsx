@@ -3,9 +3,9 @@ import { useEffect, useRef, type ButtonHTMLAttributes, type ReactNode } from "re
 type Variant = "primary" | "ghost" | "subtle" | "danger";
 
 const variants: Record<Variant, string> = {
-  primary: "bg-emerald text-white hover:bg-deep",
-  ghost: "border border-emerald text-emerald hover:bg-mist",
-  subtle: "bg-mist text-deep hover:bg-line",
+  primary: "bg-brand text-white hover:bg-brand-deep",
+  ghost: "border border-brand text-brand hover:bg-mist",
+  subtle: "bg-mist text-brand-deep hover:bg-line",
   danger: "border border-sand-ink text-sand-ink hover:bg-sand",
 };
 
@@ -38,7 +38,7 @@ export function Progress({ value, label }: { value: number; label: string }) {
       aria-valuemax={100}
       className="h-2 overflow-hidden rounded-full bg-mist"
     >
-      <div className="h-full rounded-full bg-emerald transition-[width] duration-500" style={{ width: `${pct}%` }} />
+      <div className="h-full rounded-full bg-brand transition-[width] duration-500" style={{ width: `${pct}%` }} />
     </div>
   );
 }
@@ -63,7 +63,7 @@ export function Segmented<T extends string>({
           role="radio"
           aria-checked={value === o.value}
           onClick={() => onChange(o.value)}
-          className={`min-h-11 rounded-lg px-2 text-sm font-semibold ${value === o.value ? "bg-paper text-deep shadow-sm" : "text-muted"}`}
+          className={`min-h-11 rounded-lg px-2 text-sm font-semibold ${value === o.value ? "bg-paper text-brand-deep shadow-sm" : "text-muted"}`}
         >
           {o.label}
         </button>
@@ -95,7 +95,7 @@ export function Switch({
         aria-checked={checked}
         aria-label={label}
         onClick={() => onChange(!checked)}
-        className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${checked ? "bg-emerald" : "bg-line"}`}
+        className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${checked ? "bg-brand" : "bg-line"}`}
       >
         <span
           className={`absolute top-1 h-5 w-5 rounded-full bg-white transition-all ${checked ? "start-6" : "start-1"}`}
@@ -168,7 +168,7 @@ export function Notice({ tone = "info", children }: { tone?: "info" | "warn"; ch
   return (
     <div
       role="status"
-      className={`rounded-xl px-3 py-2.5 text-sm font-medium ${tone === "warn" ? "bg-sand text-sand-ink" : "bg-mist text-deep"}`}
+      className={`rounded-xl px-3 py-2.5 text-sm font-medium ${tone === "warn" ? "bg-sand text-sand-ink" : "bg-mist text-brand-deep"}`}
     >
       {children}
     </div>
