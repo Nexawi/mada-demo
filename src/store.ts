@@ -26,6 +26,7 @@ export type Scenario = "raise" | "cut" | "essentials" | "spend" | "dip" | "prize
 export type PotKey = "emergency" | "invest";
 
 export interface LogEntry {
+  id: number;
   month: number;
   key: Key;
   p?: Record<string, number | string>;
@@ -62,6 +63,14 @@ interface Data {
   pendingBuy: { amount: number; term: Term } | null;
   queue: Scenario[];
   log: LogEntry[];
+  seq: number;
+  history: Snapshot[];
+}
+
+export interface Snapshot {
+  month: number;
+  emergency: number;
+  invested: number;
 }
 
 interface Actions {
@@ -115,19 +124,39 @@ const initial = (lang: Lang = "en"): Data => {
     pendingBuy: null,
     queue: [],
     log: [],
+    seq: 0,
+    history: [],
   };
 };
 
 export const targetOf = (s: Pick<Data, "personaId" | "essentials" | "baseOther">) =>
-  emergencyTarget({ sector: persona(s.personaId).sector, essentials: s.essentials, other: s.baseOther });
+  emergencyTarget({
+    sector: persona(s.personaId).sector,
+    essentials: s.essentials,
+    other: s.baseOther,
+  });
 
 export const holdingsTotal = (h: Holding[]) => round3(h.reduce((a, x) => a + x.amount, 0));
 
 export const useDemo = create<State>()(
   persist(
     (set, get) => {
-      const log = (e: Omit<LogEntry, "month">) =>
-        set((s) => ({ log: [{ month: s.month, ...e }, ...s.log].slice(0, 200) }));
+      const log = (e: Omit<LogEntry, "month" | "id">) =>
+        set((s) => ({
+          seq: s.seq + 1,
+          log: [{ id: s.seq + 1, month: s.month, ...e }, ...s.log].slice(0, 200),
+        }));
+
+      /** Record this month's balances for the chart (one point per month). */
+      const snap = () =>
+        set((s) => {
+          const point = {
+            month: s.month,
+            emergency: s.emergency,
+            invested: round3(s.investPot + holdingsTotal(s.holdings)),
+          };
+          return { history: [...s.history.filter((h) => h.month !== s.month), point] };
+        });
 
       const tryBuy = () => {
         const s = get();
@@ -160,6 +189,7 @@ export const useDemo = create<State>()(
         const s = get();
         if (s.paused) {
           log({ key: "log.paused" });
+          snap();
           return;
         }
         const amount = round3((s.salary * s.rate) / 100);
@@ -167,12 +197,17 @@ export const useDemo = create<State>()(
         const r = route(amount, s.path, s.investPct, s.emergency, target);
         const emergency = round3(s.emergency + r.toEmergency);
         set({ emergency, investPot: round3(s.investPot + r.toInvest) });
-        log({ key: "log.saved", p: { a: amount, e: r.toEmergency, i: r.toInvest }, money: ["a", "e", "i"] });
+        log({
+          key: "log.saved",
+          p: { a: amount, e: r.toEmergency, i: r.toInvest },
+          money: ["a", "e", "i"],
+        });
         if (!s.targetReached && emergency >= target && s.path !== "direct") {
           set({ targetReached: true, notice: "target" });
           log({ key: "log.target" });
         }
         tryBuy();
+        snap();
       };
 
       return {
@@ -195,7 +230,12 @@ export const useDemo = create<State>()(
         finishOnboarding: () => {
           const s = get();
           const rate = initialRate(persona(s.personaId), s.minRate, s.maxRate);
-          set({ rate, stage: "app", tab: "home" });
+          set({
+            rate,
+            stage: "app",
+            tab: "home",
+            history: [{ month: 0, emergency: 0, invested: 0 }],
+          });
           log({ key: "log.start" });
         },
 
@@ -212,7 +252,15 @@ export const useDemo = create<State>()(
           const essentials = q.includes("essentials") ? s.essentials + 100 : s.essentials;
           const other = q.includes("spend") ? s.baseOther + 200 : s.baseOther;
           const month = s.month + 1;
-          set({ month, salary, essentials, other, queue: [], dip: q.includes("dip"), notice: null });
+          set({
+            month,
+            salary,
+            essentials,
+            other,
+            queue: [],
+            dip: q.includes("dip"),
+            notice: null,
+          });
 
           // Maturities
           const due = get().holdings.filter((h) => h.maturity <= month);
@@ -222,7 +270,9 @@ export const useDemo = create<State>()(
               const profit = profitOf(h);
               log({ key: "log.matured", p: { a: h.amount, p: profit }, money: ["a", "p"] });
               const reinvest = get().reinvest;
-              set((st) => ({ investPot: round3(st.investPot + h.amount + (reinvest ? profit : 0)) }));
+              set((st) => ({
+                investPot: round3(st.investPot + h.amount + (reinvest ? profit : 0)),
+              }));
               if (!reinvest) log({ key: "log.profitOut", p: { p: profit }, money: ["p"] });
             }
           }
@@ -237,7 +287,13 @@ export const useDemo = create<State>()(
 
           // Rate engine
           const cur = get();
-          const next = nextRate(cur.rate, prev, { salary, essentials, other }, cur.minRate, cur.maxRate);
+          const next = nextRate(
+            cur.rate,
+            prev,
+            { salary, essentials, other },
+            cur.minRate,
+            cur.maxRate,
+          );
           if (next.reason === "spending-held") {
             set({ notice: "held" });
             log({ key: "log.held", p: { r: cur.rate } });
@@ -273,6 +329,7 @@ export const useDemo = create<State>()(
           if (!p) return;
           set({ pendingBuy: null });
           buy(p.amount, p.term);
+          snap();
         },
 
         declineBuy: () => {
@@ -288,6 +345,7 @@ export const useDemo = create<State>()(
             p: { a: amount, pot: pot === "emergency" ? "home.emergency" : "pots.invest" },
             money: ["a"],
           });
+          snap();
         },
 
         toggleScenario: (sc) =>
@@ -301,6 +359,6 @@ export const useDemo = create<State>()(
         reset: () => set(initial(get().lang)),
       };
     },
-    { name: "halal-auto-invest-demo-v1" },
+    { name: "halal-auto-invest-demo-v2" },
   ),
 );

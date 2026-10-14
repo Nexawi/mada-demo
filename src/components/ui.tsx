@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ButtonHTMLAttributes, type ReactNode } from "react";
+import { AnimatePresence, motion } from "motion/react";
 
 type Variant = "primary" | "ghost" | "subtle" | "danger";
 
@@ -38,7 +39,12 @@ export function Progress({ value, label }: { value: number; label: string }) {
       aria-valuemax={100}
       className="h-2 overflow-hidden rounded-full bg-mist"
     >
-      <div className="h-full rounded-full bg-brand transition-[width] duration-500" style={{ width: `${pct}%` }} />
+      <motion.div
+        className="h-full rounded-full bg-brand"
+        initial={false}
+        animate={{ width: `${pct}%` }}
+        transition={{ type: "spring", stiffness: 120, damping: 20 }}
+      />
     </div>
   );
 }
@@ -55,7 +61,12 @@ export function Segmented<T extends string>({
   label: string;
 }) {
   return (
-    <div role="radiogroup" aria-label={label} className="grid gap-1 rounded-xl bg-mist p-1" style={{ gridTemplateColumns: `repeat(${options.length},1fr)` }}>
+    <div
+      role="radiogroup"
+      aria-label={label}
+      className="grid gap-1 rounded-xl bg-mist p-1"
+      style={{ gridTemplateColumns: `repeat(${options.length},1fr)` }}
+    >
       {options.map((o) => (
         <button
           key={o.value}
@@ -123,14 +134,19 @@ export function Sheet({
     const prev = document.activeElement as HTMLElement | null;
     const el = ref.current;
     const focusables = () =>
-      el ? Array.from(el.querySelectorAll<HTMLElement>("button,input,select,[tabindex]:not([tabindex='-1'])")) : [];
+      el
+        ? Array.from(
+            el.querySelectorAll<HTMLElement>("button,input,select,[tabindex]:not([tabindex='-1'])"),
+          )
+        : [];
     focusables()[0]?.focus();
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
       if (e.key === "Tab") {
         const f = focusables();
         if (!f.length) return;
-        const first = f[0], last = f[f.length - 1];
+        const first = f[0],
+          last = f[f.length - 1];
         if (e.shiftKey && document.activeElement === first) {
           e.preventDefault();
           last.focus();
@@ -146,25 +162,46 @@ export function Sheet({
       prev?.focus();
     };
   }, [open, onClose]);
-  if (!open) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 sm:items-center" onClick={onClose}>
-      <div
-        ref={ref}
-        role="dialog"
-        aria-modal="true"
-        aria-label={title}
-        onClick={(e) => e.stopPropagation()}
-        className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-pearl p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] sm:rounded-3xl"
-      >
-        <h2 className="mb-3 text-lg font-bold">{title}</h2>
-        {children}
-      </div>
-    </div>
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          key="sheet"
+          className="fixed inset-0 z-50 flex items-end justify-center bg-ink/40 sm:items-center"
+          onClick={onClose}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.18 }}
+        >
+          <motion.div
+            initial={{ y: 40, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 40, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 380, damping: 32 }}
+            ref={ref}
+            role="dialog"
+            aria-modal="true"
+            aria-label={title}
+            onClick={(e) => e.stopPropagation()}
+            className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-t-3xl bg-pearl p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] sm:rounded-3xl"
+          >
+            <h2 className="mb-3 text-lg font-bold">{title}</h2>
+            {children}
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 
-export function Notice({ tone = "info", children }: { tone?: "info" | "warn"; children: ReactNode }) {
+export function Notice({
+  tone = "info",
+  children,
+}: {
+  tone?: "info" | "warn";
+  children: ReactNode;
+}) {
   return (
     <div
       role="status"

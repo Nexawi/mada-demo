@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.0 — 2026-10-14
+- Live demo: auto-play with speed control (waits on approvals), balance-by-month chart (recharts, lazy-loaded), rolling numbers (number-flow), screen and card animations (motion, respects reduced motion), event toasts (sonner), confetti on milestones (canvas-confetti, lazy-loaded).
+- Prettier applied to src.
+
 ## 0.2.0 — 2026-10-14
 - Retheme to the BisB palette from bisb.com (purples #55267E / #31005B, teal #51C1AD); Montserrat stands in for Gotham.
 

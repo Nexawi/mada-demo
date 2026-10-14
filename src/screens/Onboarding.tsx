@@ -1,17 +1,37 @@
 import { useState, type ReactNode } from "react";
-import { PERSONAS, TARGET_MONTHS, emergencyTarget, initialRate, monthsToTarget, round3, type Path, type Risk } from "../engine";
+import {
+  PERSONAS,
+  TARGET_MONTHS,
+  emergencyTarget,
+  initialRate,
+  monthsToTarget,
+  round3,
+  type Path,
+  type Risk,
+} from "../engine";
 import { useT, type Key } from "../i18n";
 import { useDemo } from "../store";
 import { Button, Card, Notice, Segmented } from "../components/ui";
 
-function Frame({ step, children, footer }: { step?: number; children: ReactNode; footer: ReactNode }) {
+function Frame({
+  step,
+  children,
+  footer,
+}: {
+  step?: number;
+  children: ReactNode;
+  footer: ReactNode;
+}) {
   return (
     <div className="flex h-full flex-col">
       <div className="flex-1 overflow-y-auto px-5 pt-6 pb-4">
         {step !== undefined && (
           <div className="mb-5 flex gap-1.5" aria-hidden="true">
             {[1, 2, 3, 4].map((i) => (
-              <span key={i} className={`h-1 flex-1 rounded-full ${i <= step ? "bg-brand" : "bg-line"}`} />
+              <span
+                key={i}
+                className={`h-1 flex-1 rounded-full ${i <= step ? "bg-brand" : "bg-line"}`}
+              />
             ))}
           </div>
         )}
@@ -27,9 +47,17 @@ export function Welcome() {
   const start = useDemo((s) => s.start);
   const [pick, setPick] = useState<"ahmed" | "fatima">("ahmed");
   return (
-    <Frame footer={<Button className="w-full" onClick={() => start(pick)}>{t("welcome.start", { name: t(`persona.${pick}`) })}</Button>}>
+    <Frame
+      footer={
+        <Button className="w-full" onClick={() => start(pick)}>
+          {t("welcome.start", { name: t(`persona.${pick}`) })}
+        </Button>
+      }
+    >
       <p className="text-sm font-semibold text-brand">{t("app.name")}</p>
-      <h1 className="mt-3 text-[2rem] leading-[1.1] font-extrabold text-brand-deep">{t("welcome.title")}</h1>
+      <h1 className="mt-3 text-[2rem] leading-[1.1] font-extrabold text-brand-deep">
+        {t("welcome.title")}
+      </h1>
       <p className="mt-4 text-muted">{t("welcome.body")}</p>
       <h2 className="mt-8 mb-3 font-bold">{t("welcome.pick")}</h2>
       <div role="radiogroup" aria-label={t("welcome.pick")} className="grid gap-2">
@@ -62,20 +90,41 @@ export function Consent() {
       step={1}
       footer={
         <div className="flex gap-2">
-          <Button variant="ghost" onClick={() => set({ stage: "welcome" })}>{t("back")}</Button>
-          <Button className="flex-1" onClick={() => set({ stage: "reading" })}>{t("consent.approve")}</Button>
+          <Button variant="ghost" onClick={() => set({ stage: "welcome" })}>
+            {t("back")}
+          </Button>
+          <Button className="flex-1" onClick={() => set({ stage: "reading" })}>
+            {t("consent.approve")}
+          </Button>
         </div>
       }
     >
-      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-deep text-white" aria-hidden="true">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 10h16M6 10v8M10 10v8M14 10v8M18 10v8M3 20h18M12 3l9 5H3z" /></svg>
+      <div
+        className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-deep text-white"
+        aria-hidden="true"
+      >
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
+          <path d="M4 10h16M6 10v8M10 10v8M14 10v8M18 10v8M3 20h18M12 3l9 5H3z" />
+        </svg>
       </div>
       <h1 className="text-2xl font-extrabold text-brand-deep">{t("consent.title")}</h1>
       <p className="mt-3 text-muted">{t("consent.body")}</p>
       <Card className="mt-5 grid gap-3">
         {(["consent.read", "consent.pay"] as Key[]).map((k) => (
           <div key={k} className="flex items-center gap-3">
-            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-mist text-brand" aria-hidden="true">✓</span>
+            <span
+              className="flex h-6 w-6 items-center justify-center rounded-full bg-mist text-brand"
+              aria-hidden="true"
+            >
+              ✓
+            </span>
             <span className="font-medium">{t(k)}</span>
           </div>
         ))}
@@ -101,8 +150,12 @@ export function Reading() {
       step={2}
       footer={
         <div className="flex gap-2">
-          <Button variant="ghost" onClick={() => s.set({ stage: "consent" })}>{t("back")}</Button>
-          <Button className="flex-1" onClick={() => s.set({ stage: "risk" })}>{t("next")}</Button>
+          <Button variant="ghost" onClick={() => s.set({ stage: "consent" })}>
+            {t("back")}
+          </Button>
+          <Button className="flex-1" onClick={() => s.set({ stage: "risk" })}>
+            {t("next")}
+          </Button>
         </div>
       }
     >
@@ -118,7 +171,9 @@ export function Reading() {
         </dl>
       </Card>
       <div className="mt-4 rounded-2xl bg-brand-deep p-4 text-white">
-        <p className="font-semibold">{t("reading.rate", { r: rate, a: m(round3((p.salary * rate) / 100)) })}</p>
+        <p className="font-semibold">
+          {t("reading.rate", { r: rate, a: m(round3((p.salary * rate) / 100)) })}
+        </p>
       </div>
     </Frame>
   );
@@ -137,8 +192,12 @@ export function RiskCheck() {
       step={3}
       footer={
         <div className="flex gap-2">
-          <Button variant="ghost" onClick={() => set({ stage: "reading" })}>{t("back")}</Button>
-          <Button className="flex-1" onClick={() => set({ risk, stage: "path" })}>{t("next")}</Button>
+          <Button variant="ghost" onClick={() => set({ stage: "reading" })}>
+            {t("back")}
+          </Button>
+          <Button className="flex-1" onClick={() => set({ risk, stage: "path" })}>
+            {t("next")}
+          </Button>
         </div>
       }
     >
@@ -149,7 +208,10 @@ export function RiskCheck() {
           <Segmented
             label={t(`risk.q${q}` as Key)}
             value={String(ans[qi])}
-            options={[0, 1, 2].map((v) => ({ value: String(v), label: t(`risk.q${q}.${v}` as Key) }))}
+            options={[0, 1, 2].map((v) => ({
+              value: String(v),
+              label: t(`risk.q${q}.${v}` as Key),
+            }))}
             onChange={(v) => setAns((a) => a.map((x, i) => (i === qi ? Number(v) : x)))}
           />
         </fieldset>
@@ -168,15 +230,20 @@ export function PathChoice() {
   const rate = initialRate(p, s.minRate, s.maxRate);
   const monthly = round3((p.salary * rate) / 100);
   const target = emergencyTarget(p);
-  const toEmergency = s.path === "safety" ? monthly : s.path === "hybrid" ? (monthly * (100 - s.investPct)) / 100 : 0;
+  const toEmergency =
+    s.path === "safety" ? monthly : s.path === "hybrid" ? (monthly * (100 - s.investPct)) / 100 : 0;
   const paths: Path[] = ["safety", "hybrid", "direct"];
   return (
     <Frame
       step={4}
       footer={
         <div className="flex gap-2">
-          <Button variant="ghost" onClick={() => s.set({ stage: "risk" })}>{t("back")}</Button>
-          <Button className="flex-1" onClick={s.finishOnboarding}>{t("path.finish")}</Button>
+          <Button variant="ghost" onClick={() => s.set({ stage: "risk" })}>
+            {t("back")}
+          </Button>
+          <Button className="flex-1" onClick={s.finishOnboarding}>
+            {t("path.finish")}
+          </Button>
         </div>
       }
     >
@@ -199,20 +266,37 @@ export function PathChoice() {
 
       {s.path === "hybrid" && (
         <Card className="mt-4">
-          <label htmlFor="split" className="font-semibold">{t("split.label")}</label>
+          <label htmlFor="split" className="font-semibold">
+            {t("split.label")}
+          </label>
           <div className="mt-1 flex justify-between text-sm font-semibold">
             <span className="text-brand">{t("split.save", { x: 100 - s.investPct })}</span>
             <span className="text-invest-ink">{t("split.invest", { x: s.investPct })}</span>
           </div>
-          <input id="split" type="range" min={10} max={90} step={10} value={s.investPct} onChange={(e) => s.set({ investPct: Number(e.target.value) })} />
+          <input
+            id="split"
+            type="range"
+            min={10}
+            max={90}
+            step={10}
+            value={s.investPct}
+            onChange={(e) => s.set({ investPct: Number(e.target.value) })}
+          />
         </Card>
       )}
 
       {s.path === "direct" ? (
-        <div className="mt-4"><Notice tone="warn">{t("path.warn")}</Notice></div>
+        <div className="mt-4">
+          <Notice tone="warn">{t("path.warn")}</Notice>
+        </div>
       ) : (
         <p className="mt-4 text-sm text-muted">
-          {t("path.target", { t: m(target), m: TARGET_MONTHS[p.sector], a: m(round3(toEmergency)), n: monthsToTarget(target, toEmergency) })}
+          {t("path.target", {
+            t: m(target),
+            m: TARGET_MONTHS[p.sector],
+            a: m(round3(toEmergency)),
+            n: monthsToTarget(target, toEmergency),
+          })}
         </p>
       )}
 
@@ -228,11 +312,17 @@ export function PathChoice() {
                 value={s[k]}
                 onChange={(e) => {
                   const v = Number(e.target.value);
-                  s.set(k === "minRate" ? { minRate: Math.min(v, s.maxRate) } : { maxRate: Math.max(v, s.minRate) });
+                  s.set(
+                    k === "minRate"
+                      ? { minRate: Math.min(v, s.maxRate) }
+                      : { maxRate: Math.max(v, s.minRate) },
+                  );
                 }}
               >
                 {[5, 10, 15, 20, 25, 30].map((v) => (
-                  <option key={v} value={v}>{v}%</option>
+                  <option key={v} value={v}>
+                    {v}%
+                  </option>
                 ))}
               </select>
             </label>

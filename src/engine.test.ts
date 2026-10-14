@@ -29,11 +29,20 @@ describe("emergency target", () => {
 describe("rate engine", () => {
   it("starts at 60% of free cash", () => expect(initialRate(ahmed, 5, 25)).toBe(15));
   it("raises on income up", () =>
-    expect(nextRate(15, base, { ...base, salary: 1400 }, 5, 25)).toEqual({ rate: 17, reason: "income-up" }));
+    expect(nextRate(15, base, { ...base, salary: 1400 }, 5, 25)).toEqual({
+      rate: 17,
+      reason: "income-up",
+    }));
   it("lowers on essentials up", () =>
-    expect(nextRate(15, base, { ...base, essentials: 750 }, 5, 25)).toEqual({ rate: 13, reason: "essentials-up" }));
+    expect(nextRate(15, base, { ...base, essentials: 750 }, 5, 25)).toEqual({
+      rate: 13,
+      reason: "essentials-up",
+    }));
   it("holds on a discretionary spending spike", () =>
-    expect(nextRate(15, base, { ...base, other: 450 }, 5, 25)).toEqual({ rate: 15, reason: "spending-held" }));
+    expect(nextRate(15, base, { ...base, other: 450 }, 5, 25)).toEqual({
+      rate: 15,
+      reason: "spending-held",
+    }));
   it("respects the customer maximum", () =>
     expect(nextRate(25, base, { ...base, salary: 1400 }, 5, 25).rate).toBe(25));
   it("never takes more than free cash", () =>
@@ -56,7 +65,8 @@ describe("investing", () => {
     expect(buyable(250, 0, 10)).toBe(200);
     expect(buyable(90, 0, 0)).toBe(0);
   });
-  it("profit for 6 months at 5%", () => expect(profitOf({ amount: 1000, rate: 0.05, term: 6 })).toBe(25));
+  it("profit for 6 months at 5%", () =>
+    expect(profitOf({ amount: 1000, rate: 0.05, term: 6 })).toBe(25));
   it("zakat is 2.5% above nisab only", () => {
     expect(zakatDue(4000)).toBe(100);
     expect(zakatDue(1000)).toBe(0);
