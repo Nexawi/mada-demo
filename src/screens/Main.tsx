@@ -15,9 +15,9 @@ import { holdingsTotal, targetOf, useDemo, type PotKey } from "../store";
 import { Button, Card, Notice, Progress, Segmented, Sheet, Switch } from "../components/ui";
 import { AnimatePresence, motion } from "motion/react";
 import { Money, Percent } from "../components/live";
+import { logText } from "../logText";
 
 const BalanceChart = lazy(() => import("../components/chart"));
-import { logText } from "../logText";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
