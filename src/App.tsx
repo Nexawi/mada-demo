@@ -260,7 +260,6 @@ export default function App() {
   const { t, lang } = useT();
   const wide = useIsWide();
   const [demoOpen, setDemoOpen] = useState(false);
-  const inApp = useDemo((s) => s.stage === "app");
   const [playing, setPlaying] = useState(false);
   const [speed, setSpeed] = useState<"normal" | "fast">("normal");
   const blocked = useAutoplay(playing, speed);
@@ -313,7 +312,7 @@ export default function App() {
         <button
           type="button"
           onClick={() => setDemoOpen(true)}
-          className={`fixed end-4 z-40 ${inApp ? "bottom-[calc(6rem+env(safe-area-inset-bottom))]" : "bottom-[calc(6rem+env(safe-area-inset-bottom))]"} min-h-11 rounded-full bg-ink px-4 text-sm font-bold text-white shadow-lg`}
+          className="fixed end-4 bottom-[calc(6rem+env(safe-area-inset-bottom))] z-40 min-h-11 rounded-full bg-ink px-4 text-sm font-bold text-white shadow-lg"
         >
           {t("demo.open")}
         </button>
