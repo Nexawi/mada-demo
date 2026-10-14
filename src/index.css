@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+@theme {
+  --color-pearl: #f3f5f4;
+  --color-paper: #ffffff;
+  --color-ink: #13231f;
+  --color-muted: #56655f;
+  --color-emerald: #0b6e55;
+  --color-deep: #0a3a2f;
+  --color-mist: #e3ede9;
+  --color-line: #c9d6d1;
+  --color-gold: #b88a2c;
+  --color-sand: #f5ebd6;
+  --color-sand-ink: #5a4210;
+  --color-violet: #edebfb;
+  --color-violet-ink: #3b3486;
+  --font-sans: "Schibsted Grotesk", "IBM Plex Sans Arabic", system-ui, sans-serif;
+}
+
+:root {
+  color-scheme: light;
+}
+html,
+body,
+#root {
+  height: 100%;
+}
+body {
+  margin: 0;
+  background: var(--color-pearl);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+[dir="rtl"] body,
+[dir="rtl"] {
+  font-family: "IBM Plex Sans Arabic", "Schibsted Grotesk", system-ui, sans-serif;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #8888 transparent;
+}
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: #8888;
+  border-radius: 3px;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-gold);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+input[type="range"] {
+  width: 100%;
+  accent-color: var(--color-emerald);
+  height: 44px;
+  cursor: pointer;
+}
+
+.tnum {
+  font-variant-numeric: lining-nums;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}
