@@ -1,7 +1,13 @@
 # Changelog
 
+## 0.6.0 — 2026-10-14
+- Added the Mada BISB logo (welcome screen, app header, desktop panel, favicon).
+
 ## 0.5.0 — 2026-10-14
 - Dummy data: "Explore a sample account" loads Ahmed after 14 simulated months (raise, spending spike, prize win, market dip); the open banking step shows a dummy monthly spending breakdown by category.
+
+## 0.6.0 — 2026-10-14
+- Added the Mada BISB logo (welcome screen, app header, desktop panel, favicon).
 
 ## 0.5.0 — 2026-10-14
 - Dummy data: "Explore a sample account" loads Ahmed after 14 simulated months; onboarding shows a monthly spending breakdown by category.

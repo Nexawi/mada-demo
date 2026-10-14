@@ -5,6 +5,7 @@ import { Button, Segmented, Sheet } from "./components/ui";
 import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import { Toaster } from "sonner";
 import { LiveEvents } from "./components/live";
+import { Logo } from "./components/Logo";
 import { Consent, Plan, Reading, RiskCheck, TejooriSetup, Welcome } from "./screens/Onboarding";
 import { Activity, Home, Invest, Pots, Settings } from "./screens/Main";
 
@@ -75,8 +76,11 @@ function AppScreens() {
   ];
   return (
     <div className="flex h-full flex-col">
+      <header className="flex items-center justify-between px-5 pt-4">
+        <Logo tagline={false} className="h-9 w-auto" />
+      </header>
       <AnimatePresence mode="wait" initial={false}>
-        <motion.main key={tab} className="flex-1 overflow-y-auto px-5 pt-6 pb-6" {...fade}>
+        <motion.main key={tab} className="flex-1 overflow-y-auto px-5 pt-3 pb-6" {...fade}>
           <Screen />
         </motion.main>
       </AnimatePresence>
@@ -294,7 +298,7 @@ export default function App() {
             <AppScreens />
           </div>
           <aside className="w-[340px]">
-            <p className="mb-1 text-xl font-extrabold text-brand">{t("app.name")}</p>
+            <Logo className="mb-4 h-auto w-48" />
             <DemoPanel play={play} />
           </aside>
         </div>

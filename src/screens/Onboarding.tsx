@@ -15,6 +15,7 @@ import {
 import { useT, type Key } from "../i18n";
 import { useDemo, usesTejoori } from "../store";
 import { Button, Card, Notice, Segmented } from "../components/ui";
+import { Logo } from "../components/Logo";
 
 function Frame({
   step,
@@ -87,8 +88,8 @@ export function Welcome() {
         </Button>
       }
     >
-      <p className="text-2xl font-extrabold text-brand">{t("app.name")}</p>
-      <h1 className="mt-3 text-[1.9rem] leading-[1.1] font-extrabold text-ink">
+      <Logo className="h-auto w-44" />
+      <h1 className="mt-5 text-[1.9rem] leading-[1.1] font-extrabold text-ink">
         {t("welcome.title")}
       </h1>
       <p className="mt-3 text-muted">{t("welcome.body")}</p>
